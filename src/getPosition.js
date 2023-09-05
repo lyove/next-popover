@@ -36,6 +36,8 @@ export default function getPosition({
   popoverElement,
   // Arrow icon in the popover
   arrowElement,
+  // mount container for popover
+  mountContainer = document.body,
   // Placement of popover(top, bottom, left, right, auto), default auto
   placement = "auto",
   // Space between popover and its activator (in pixel), default 0
@@ -53,6 +55,15 @@ export default function getPosition({
     transform: "",
   });
 
+  // trigger Rect
+  const triggerElementCoords = $getAbsoluteCoords(triggerElement);
+  const triggerElementWidth = triggerElementCoords.width;
+  const triggerElementHeight = triggerElementCoords.height;
+  const triggerElementTop = triggerElementCoords.top;
+  const triggerElementRight = triggerElementCoords.right;
+  const triggerElementBottom = triggerElementCoords.bottom;
+  const triggerElementLeft = triggerElementCoords.left;
+
   // popover Rect
   const popoverElementCoords = $getAbsoluteCoords(popoverElement);
   const popoverElementWidth = popoverElementCoords.width;
@@ -62,14 +73,14 @@ export default function getPosition({
   const popoverElementBotttom = popoverElementCoords.bottom;
   const popoverElementLeft = popoverElementCoords.left;
 
-  // trigger Rect
-  const triggerElementCoords = $getAbsoluteCoords(triggerElement);
-  const triggerElementWidth = triggerElementCoords.width;
-  const triggerElementHeight = triggerElementCoords.height;
-  const triggerElementTop = triggerElementCoords.top;
-  const triggerElementRight = triggerElementCoords.right;
-  const triggerElementBottom = triggerElementCoords.bottom;
-  const triggerElementLeft = triggerElementCoords.left;
+  // mountContainer Rect
+  const mountContainerCoords = $getAbsoluteCoords(mountContainer);
+  const mountContainerWidth = mountContainerCoords.width;
+  const mountContainerHeight = mountContainerCoords.height;
+  const mountContainerTop = mountContainerCoords.top;
+  const mountContainerRight = mountContainerCoords.right;
+  const mountContainerBotttom = mountContainerCoords.bottom;
+  const mountContainerLeft = mountContainerCoords.left;
 
   /** find the placement which has more space */
   if (placement === "auto") {
@@ -157,10 +168,17 @@ export default function getPosition({
   let top = placementsValue[placement].top;
   let left = placementsValue[placement].left;
 
-  const topEdge = window.scrollY - popoverElementTop;
-  const bottomEdge = window.innerHeight + topEdge;
-  const leftEdge = window.scrollX - popoverElementLeft;
-  const rightEdge = window.innerWidth + leftEdge;
+  // edge
+  let topEdge = window.scrollY - popoverElementTop;
+  let bottomEdge = window.innerHeight + topEdge;
+  let leftEdge = window.scrollX - popoverElementLeft;
+  let rightEdge = window.innerWidth + leftEdge;
+  if (mountContainer !== document.body) {
+    topEdge = mountContainerTop - popoverElementTop;
+    bottomEdge = mountContainerHeight + topEdge;
+    leftEdge = mountContainerLeft - popoverElementLeft;
+    rightEdge = mountContainerWidth + leftEdge;
+  }
 
   // inverse placement
   let inversePlacement;
