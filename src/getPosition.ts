@@ -8,7 +8,6 @@ interface ParamProps {
   mountContainer?: HTMLElement | undefined;
   placement: PlacementType | "auto";
   margin?: number;
-  transitionDistance?: number;
 }
 
 interface PositonResult {
@@ -59,10 +58,8 @@ export default function getPosition({
   mountContainer = document.body,
   // Placement of popover(top, bottom, left, right, auto), default auto
   placement = "auto",
-  // Space between popover and its activator (in pixel), default 0
+  // Space between popover and its trigger (in pixel), default 0
   margin = 0,
-  // Distance to translate on show/hide animation (in pixel), default 10
-  transitionDistance = 10,
 }: ParamProps): PositonResult {
   // init
   if (!triggerElement || !popoverElement) {
