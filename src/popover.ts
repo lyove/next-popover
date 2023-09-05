@@ -309,54 +309,6 @@ export default class Popover {
     changed.forEach(([k, n, o]) => {
       // k: key, n: new,  o：old
       switch (k) {
-        case "content":
-          this.popoverContent.removeChild(o as HTMLElement);
-          if (n instanceof HTMLElement) {
-            this.popoverContent.appendChild(n);
-          } else {
-            this.popoverContent.innerHTML = (n || "").toString();
-          }
-          break;
-
-        case "emit":
-          if (triggerIsElement) {
-            this.#removeTriggerEvent();
-            if (n) {
-              this.#addTriggerEvent();
-            }
-          }
-          this.#removeOriginEvent();
-          this.#addOriginEvent();
-          break;
-
-        case "mountContainer":
-          if (!n) {
-            newConfig.mountContainer = document.body;
-          }
-          if (this.#resizeObserver) {
-            this.#resizeObserver.unobserve(o as HTMLElement);
-            this.#resizeObserver.observe(newConfig.mountContainer as HTMLElement);
-          }
-          break;
-
-        case "triggerOpenClass":
-          if (this.opened && triggerIsElement) {
-            if (o) {
-              (trigger as Element).classList.remove(o as string);
-            }
-            if (n) {
-              (trigger as Element).classList.add(n as string);
-            }
-          }
-          break;
-
-        case "enterable":
-          this.#removeOriginEvent();
-          if (n) {
-            this.#addOriginEvent();
-          }
-          break;
-
         case "trigger":
           {
             const oldIsTriggerEl = triggerIsElement;
@@ -396,6 +348,66 @@ export default class Popover {
           }
           break;
 
+        case "content":
+          this.popoverContent.removeChild(o as HTMLElement);
+          if (n instanceof HTMLElement) {
+            this.popoverContent.appendChild(n);
+          } else {
+            this.popoverContent.innerHTML = (n || "").toString();
+          }
+          break;
+
+        case "mountContainer":
+          if (!n) {
+            newConfig.mountContainer = document.body;
+          }
+          if (this.#resizeObserver) {
+            this.#resizeObserver.unobserve(o as HTMLElement);
+            this.#resizeObserver.observe(newConfig.mountContainer as HTMLElement);
+          }
+          break;
+
+        case "showArrow":
+          if (n) {
+            this.arrowElement = this.arrowElement || this.#createArrow();
+            this.popoverWrapper.appendChild(this.arrowElement);
+          } else {
+            if (this.arrowElement && this.popoverWrapper.contains(this.arrowElement)) {
+              this.popoverWrapper.removeChild(this.arrowElement);
+            }
+            this.arrowElement = undefined;
+          }
+          break;
+
+        case "emit":
+          if (triggerIsElement) {
+            this.#removeTriggerEvent();
+            if (n) {
+              this.#addTriggerEvent();
+            }
+          }
+          this.#removeOriginEvent();
+          this.#addOriginEvent();
+          break;
+
+        case "autoUpdate":
+          if (n) {
+            if (!this.#resizeObserver) {
+              this.#observe();
+            }
+          } else if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect();
+            this.#resizeObserver = undefined;
+          }
+          break;
+
+        case "enterable":
+          this.#removeOriginEvent();
+          if (n) {
+            this.#addOriginEvent();
+          }
+          break;
+
         case "closeOnScroll":
           {
             const need = this.#needListenScroll();
@@ -418,26 +430,14 @@ export default class Popover {
           }
           break;
 
-        case "showArrow":
-          if (n) {
-            this.arrowElement = this.arrowElement || this.#createArrow();
-            this.popoverWrapper.appendChild(this.arrowElement);
-          } else {
-            if (this.arrowElement && this.popoverWrapper.contains(this.arrowElement)) {
-              this.popoverWrapper.removeChild(this.arrowElement);
+        case "triggerOpenClass":
+          if (this.opened && triggerIsElement) {
+            if (o) {
+              (trigger as Element).classList.remove(o as string);
             }
-            this.arrowElement = undefined;
-          }
-          break;
-
-        case "autoUpdate":
-          if (n) {
-            if (!this.#resizeObserver) {
-              this.#observe();
+            if (n) {
+              (trigger as Element).classList.add(n as string);
             }
-          } else if (this.#resizeObserver) {
-            this.#resizeObserver.disconnect();
-            this.#resizeObserver = undefined;
           }
           break;
 
@@ -453,7 +453,7 @@ export default class Popover {
 
     this.update();
   }
-
+  
   /**
    * Toggle the Popover instance open or close.
    */
