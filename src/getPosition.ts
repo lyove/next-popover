@@ -16,8 +16,6 @@ interface PositonResult {
   top: number;
   arrowLeft: number;
   arrowTop: number;
-  fromLeft: number;
-  fromTop: number;
   placement: PlacementType;
 }
 
@@ -263,34 +261,6 @@ export default function getPosition({
     }
   }
 
-  // data-from-* mapping
-  const dataFromMapping: {
-    [key: string]: {
-      fromTop: number;
-      fromLeft: number;
-    };
-  } = {
-    top: {
-      fromTop: top + transitionDistance,
-      fromLeft: left,
-    },
-    right: {
-      fromTop: top,
-      fromLeft: left - transitionDistance,
-    },
-    bottom: {
-      fromTop: top - transitionDistance,
-      fromLeft: left,
-    },
-    left: {
-      fromTop: top,
-      fromLeft: left + transitionDistance,
-    },
-  };
-
-  // animation data-* value
-  const { fromTop, fromLeft } = dataFromMapping[mainPlacement];
-
   /**
    * Set arrow style
    */
@@ -341,8 +311,6 @@ export default function getPosition({
     top,
     arrowLeft,
     arrowTop,
-    fromLeft,
-    fromTop,
     placement,
   };
 }
