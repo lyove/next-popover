@@ -105,6 +105,7 @@ window.onload = function () {
   const multiConfig = {
     mountContainer: document.body,
     content: "Next-Popover",
+    wrapperClass: "multi-popover",
     animationClass: "fade",
     placement: PlacementType.Top,
     emit: EmitType.Hover,

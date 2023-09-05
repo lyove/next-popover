@@ -232,7 +232,7 @@ header .btn-row .btn:active {
   vertical-align: middle;
   -webkit-appearance: none;
   border: 1px solid rgb(220, 223, 230);
-  padding: 8px 15px;
+  padding: 8px 10px;
   border-radius: 4px;
 }
 
@@ -255,9 +255,17 @@ header .btn-row .btn:active {
  * Popover style
  */
 /* content */
-.popover-wrapper.single-popover .popover-content {
+.single-popover .popover-content {
   min-width: 100px;
   height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popover-content {
+  min-width: 100px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
