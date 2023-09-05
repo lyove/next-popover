@@ -1,5 +1,7 @@
 # next-popover
 
+![Header Image](public/Popover.png)
+
 Next-Popover is a smart popover library that can automatically pop up at a suitable position adjacent to the trigger.
 
 [![Demo](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/next-popover-vywrrk)
