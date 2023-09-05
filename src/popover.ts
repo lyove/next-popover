@@ -453,7 +453,7 @@ export default class Popover {
 
     this.update();
   }
-  
+
   /**
    * Toggle the Popover instance open or close.
    */
