@@ -11,10 +11,25 @@ import {
 import { EmitType, PlacementType } from "./constant";
 import "./style/index.scss";
 
+// class name
 const NextPopoverId = "next-popover";
 const WrapperClassName = "popover-wrapper";
 const ContentClassName = "popover-content";
 const ArrowClass = "popover-arrow";
+
+// default config
+const DefaultConfig: Partial<PopoverConfig> = {
+  placement: PlacementType.Top,
+  showArrow: true,
+  mountContainer: document.body,
+  autoUpdate: true,
+  emit: EmitType.Click,
+  animationClass: "fade",
+  clickOutsideClose: true,
+  enterable: true,
+  openDelay: 100,
+  closeDelay: 100,
+};
 
 /**
  * Popover
@@ -31,21 +46,9 @@ export default class Popover {
   closed = true;
 
   /* private property */
-  #defaultConfig: Partial<PopoverConfig> = {
-    placement: PlacementType.Top,
-    showArrow: true,
-    mountContainer: document.body,
-    autoUpdate: true,
-    emit: EmitType.Click,
-    animationClass: "fade",
-    clickOutsideClose: true,
-    closeAnimation: true,
-    enterable: true,
-    openDelay: 100,
-    closeDelay: 100,
-  };
-  #animationClass?: AnimationClass;
   #isAnimating = false;
+  #animationClass?: AnimationClass;
+  #prevPlacement?: PlacementType;
   #showRaf?: number;
   #hideRaf?: number;
   #clearShow?: () => void;
@@ -54,7 +57,6 @@ export default class Popover {
   #resizeObserver?: ResizeObserver;
   #openTimer?: any;
   #closeTimer?: any;
-  #prevPlacement?: PlacementType;
 
   /**
    * Constructor
@@ -62,44 +64,58 @@ export default class Popover {
    */
   constructor(config: PopoverConfig) {
     if (config) {
-      this.init(config);
+      this.config = {
+        ...DefaultConfig,
+        ...config,
+        mountContainer: config.mountContainer || document.body,
+      };
+      const { trigger, content } = this.config;
+      if (
+        !trigger ||
+        !(trigger instanceof HTMLElement) ||
+        !content ||
+        !(
+          content instanceof HTMLElement ||
+          typeof content === "string" ||
+          typeof content === "number"
+        )
+      ) {
+        throw new Error("Invalid configuration");
+      }
+      this.init();
+    } else {
+      throw new Error("Invalid config");
     }
   }
 
   /**
    * Initialize
-   * @param config
    */
-  protected init(config: PopoverConfig) {
-    this.config = {
-      ...this.#defaultConfig,
-      ...config,
-      mountContainer: config.mountContainer || document.body,
-    };
-
-    const { trigger, content, mountContainer } = this.config;
-
-    if (!trigger || !content) {
-      throw new Error("Invalid configuration");
-    }
+  protected init() {
+    const { trigger, mountContainer, autoUpdate, defaultOpen } = this.config;
 
     // create popover
     this.#createPopover();
 
     // autoUpdate
-    if (this.config.autoUpdate) {
+    if (autoUpdate) {
       this.#observe();
     }
 
+    // add event
+    this.#addTriggerEvent();
+    this.#addOriginEvent();
+
+    // set animation
+    this.#setAnimationClass();
+
+    // listen scroll
     if (this.#needListenScroll()) {
       this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, mountContainer!);
     }
 
-    this.#setAnimationClass();
-    this.#addTriggerEvent();
-    this.#addOriginEvent();
-
-    if (this.config.open) {
+    // default open
+    if (defaultOpen) {
       requestAnimationFrame(() => this.open());
     }
   }
@@ -164,6 +180,7 @@ export default class Popover {
       triggerElement: config.trigger,
       popoverElement: this.originElement,
       arrowElement: this.arrowElement,
+      mountContainer: config.mountContainer,
       placement: config.placement ? config.placement : PlacementType.Top,
       margin: 8,
     });
@@ -197,7 +214,7 @@ export default class Popover {
    * Close the Popover instance.
    */
   close() {
-    const { trigger, triggerOpenClass, closeAnimation, onBeforeExit, onClose } = this.config;
+    const { trigger, triggerOpenClass, onBeforeExit, onClose } = this.config;
     this.closed = true;
 
     if (this.#isAnimating || !this.opened) {
@@ -206,7 +223,7 @@ export default class Popover {
 
     this.opened = false;
 
-    if (closeAnimation && this.#animationClass) {
+    if (this.#animationClass) {
       const { exitFrom, exitActive, exitTo } = this.#animationClass;
       if (onBeforeExit) {
         onBeforeExit();
