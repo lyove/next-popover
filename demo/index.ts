@@ -109,7 +109,6 @@ window.onload = function () {
     animationClass: "fade",
     placement: PlacementType.Top,
     emit: EmitType.Hover,
-    open: false,
   };
 
   placementsItems.forEach((item) => {
