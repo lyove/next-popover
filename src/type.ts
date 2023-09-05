@@ -1,28 +1,20 @@
 import type { EmitType, PlacementType } from "./constant";
 
-type RectInfo = {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-};
-
 export interface PopoverConfig {
-  trigger: HTMLElement | { getBoundingClientRect: () => RectInfo };
-  content: Node | string;
-  placement?: PlacementType;
+  trigger: HTMLElement;
+  content: HTMLElement | string | number;
   mountContainer?: HTMLElement;
+  placement?: PlacementType;
   showArrow?: boolean;
   emit?: EmitType;
   autoUpdate?: boolean;
-  open?: boolean;
+  defaultOpen?: boolean;
   openDelay?: number;
   closeDelay?: number;
   enterable?: boolean;
   disabled?: boolean;
   clickOutsideClose?: boolean;
   closeOnScroll?: boolean;
-  closeAnimation?: boolean;
   triggerOpenClass?: string;
   wrapperClass?: string;
   animationClass?: string;
