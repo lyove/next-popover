@@ -47,24 +47,3 @@ export function throttleTime(fn: () => void, time = 0, ctx?: any) {
     }, time);
   };
 }
-
-export function getChangedAttrs<T extends Record<string, any>>(
-  newV: Partial<T>,
-  oldV: Partial<T>,
-  updateOld = false,
-) {
-  const patch: [keyof T, Partial<T>[keyof T], Partial<T>[keyof T]][] = [];
-  Object.keys(newV).forEach((x: keyof T) => {
-    if (newV[x] !== oldV[x]) {
-      patch.push([x, newV[x], oldV[x]]);
-      if (updateOld) {
-        oldV[x] = newV[x];
-      }
-    }
-  });
-  return patch;
-}
-
-export function clamp(n: number, lower = 0, upper = 1): number {
-  return Math.max(Math.min(n, upper), lower);
-}

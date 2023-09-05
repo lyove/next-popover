@@ -1,13 +1,6 @@
 import type { PopoverConfig, AnimationClass } from "./type";
 import getPosition from "./getPosition";
-import {
-  $,
-  $showDomElement,
-  $setStyle,
-  $getStyleProperties,
-  throttle,
-  getChangedAttrs,
-} from "./utils";
+import { $, $showDomElement, $setStyle, $getStyleProperties, throttle } from "./utils";
 import { EmitType, PlacementType } from "./constant";
 import "./style/index.scss";
 
@@ -28,7 +21,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
   clickOutsideClose: true,
   enterable: true,
   openDelay: 100,
-  closeDelay: 100,
+  closeDelay: 50,
 };
 
 /**
@@ -64,11 +57,7 @@ export default class Popover {
    */
   constructor(config: PopoverConfig) {
     if (config) {
-      this.config = {
-        ...DefaultConfig,
-        ...config,
-        mountContainer: config.mountContainer || document.body,
-      };
+      this.config = this.#getConfig(config);
       const { trigger, content } = this.config;
       if (
         !trigger ||
@@ -241,7 +230,7 @@ export default class Popover {
       this.#hide();
     }
 
-    if (trigger instanceof Element && triggerOpenClass) {
+    if (triggerOpenClass) {
       trigger.classList.remove(triggerOpenClass);
     }
 
@@ -298,48 +287,52 @@ export default class Popover {
    */
   updateConfig(newConfig: Partial<PopoverConfig>) {
     const { trigger, triggerOpenClass, mountContainer } = this.config;
-    const changed = getChangedAttrs(newConfig, this.config, true);
 
-    if (!changed.length) {
+    function getChangedAttrs<T extends Record<string, any>>(
+      newV: Partial<T>,
+      oldV: Partial<T>,
+      updateOld = false,
+    ) {
+      const patch: [keyof T, Partial<T>[keyof T], Partial<T>[keyof T]][] = [];
+      Object.keys(newV).forEach((x: keyof T) => {
+        if (newV[x] !== oldV[x]) {
+          patch.push([x, newV[x], oldV[x]]);
+          if (updateOld) {
+            oldV[x] = newV[x];
+          }
+        }
+      });
+      return patch;
+    }
+
+    const changedAttrs = getChangedAttrs(newConfig, this.config, true);
+
+    if (!changedAttrs.length) {
       return;
     }
 
-    const triggerIsElement = trigger instanceof Element;
-
-    changed.forEach(([k, n, o]) => {
+    changedAttrs.forEach(([k, n, o]) => {
       // k: key, n: new,  o：old
       switch (k) {
         case "trigger":
           {
-            const oldIsTriggerEl = triggerIsElement;
-            if (oldIsTriggerEl) {
-              this.#removeTriggerEvent(o as HTMLElement);
-              if (triggerOpenClass) {
-                (o as Element).classList.remove(triggerOpenClass);
-              }
+            this.#removeTriggerEvent(o as HTMLElement);
+            if (triggerOpenClass) {
+              (o as Element).classList.remove(triggerOpenClass);
             }
-            const newTriggerIsElement = n instanceof Element;
             if (this.#resizeObserver) {
-              if (oldIsTriggerEl) {
-                this.#resizeObserver.unobserve(o as HTMLElement);
-              }
-              if (newTriggerIsElement) {
-                this.#resizeObserver.observe(n as HTMLElement);
-              }
+              this.#resizeObserver.unobserve(o as HTMLElement);
+              this.#resizeObserver.observe(n as HTMLElement);
             }
-            if (newTriggerIsElement) {
-              this.#addTriggerEvent();
-              if (this.opened && triggerOpenClass) {
-                (o as Element).classList.add(triggerOpenClass);
-              }
+            this.#addTriggerEvent();
+            if (this.opened && triggerOpenClass) {
+              (o as Element).classList.add(triggerOpenClass);
             }
+
             const need = this.#needListenScroll();
             if (need) {
               if (!this.#scrollElements) {
-                this.#scrollElements = this.#getScrollElements(
-                  trigger as HTMLElement,
-                  mountContainer!,
-                );
+                this.#scrollElements = this.#getScrollElements(trigger, mountContainer!);
               }
             } else if (this.#scrollElements) {
               this.#removeScrollEvent();
@@ -358,12 +351,16 @@ export default class Popover {
           break;
 
         case "mountContainer":
-          if (!n) {
-            newConfig.mountContainer = document.body;
+          if ((o as HTMLElement).contains(this.originElement)) {
+            (o as HTMLElement).removeChild(this.originElement);
           }
+          if (!n || !(n instanceof HTMLElement)) {
+            this.config.mountContainer = document.body;
+          }
+          this.config.mountContainer = n as HTMLElement;
           if (this.#resizeObserver) {
             this.#resizeObserver.unobserve(o as HTMLElement);
-            this.#resizeObserver.observe(newConfig.mountContainer as HTMLElement);
+            this.#resizeObserver.observe(n as HTMLElement);
           }
           break;
 
@@ -380,11 +377,9 @@ export default class Popover {
           break;
 
         case "emit":
-          if (triggerIsElement) {
-            this.#removeTriggerEvent();
-            if (n) {
-              this.#addTriggerEvent();
-            }
+          this.#removeTriggerEvent();
+          if (n) {
+            this.#addTriggerEvent();
           }
           this.#removeOriginEvent();
           this.#addOriginEvent();
@@ -431,7 +426,7 @@ export default class Popover {
           break;
 
         case "triggerOpenClass":
-          if (this.opened && triggerIsElement) {
+          if (this.opened) {
             if (o) {
               (trigger as Element).classList.remove(o as string);
             }
@@ -520,6 +515,20 @@ export default class Popover {
         pop.parentElement?.removeChild(pop);
       }
     });
+  }
+
+  #getConfig(config: PopoverConfig) {
+    const cfg = {
+      ...DefaultConfig,
+      ...config,
+    };
+    if (!cfg.mountContainer) {
+      cfg.mountContainer = document.body;
+    }
+    if (typeof cfg.closeDelay === "number" && cfg.closeDelay < 50) {
+      cfg.closeDelay = 50;
+    }
+    return cfg;
   }
 
   #createPopover() {

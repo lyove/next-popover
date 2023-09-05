@@ -35,7 +35,7 @@ header {
 header span {
   display: inline-block;
   line-height: 60px;
-  font-size: 36px;
+  font-size: 28px;
   background: linear-gradient(120deg, #bd34fe 30%, #41d1ff);
   background-clip: text;
   -webkit-background-clip: text;
@@ -51,11 +51,12 @@ header span {
 }
 
 .description {
-  margin-bottom: 16px;
+  width: 800px;
+  margin: 16px auto 16px;
   text-align: center;
 }
 
-.description .tagline {
+.description .txt {
   font-size: 20px;
 }
 
@@ -69,7 +70,7 @@ header span {
   display: flex;
   align-items: center;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   margin-right: 20px;
   cursor: pointer;
   user-select: none;

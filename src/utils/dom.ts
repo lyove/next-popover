@@ -104,7 +104,7 @@ export function $setStyle($element: HTMLElement, style: { [key: string]: string 
  */
 export function $setData($element: HTMLElement, data: { [key: string]: any }) {
   if (!$element) {
-    return;
+    throw new Error("Invalid param");
   }
 
   Object.entries(data || {}).forEach(([key, val]) => {
@@ -132,7 +132,7 @@ export function $getStyleProperties($element: HTMLElement, key: string) {
  */
 export function $getAbsoluteCoords($element: HTMLElement) {
   if (!$element) {
-    return;
+    throw new Error("Invalid param");
   }
 
   const boxRect = $element.getBoundingClientRect();

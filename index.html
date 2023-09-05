@@ -17,14 +17,6 @@
     <div class="feature">
       <div class="description">
         <div class="btn-row">
-          <a class="btn pri" href="https://github.com/lyove/next-popover" target="_blank">
-            Get Started
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
           <a class="btn" href="https://github.com/lyove/next-popover" target="_blank">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,9 +26,18 @@
             </svg>
             Github
           </a>
+          <a class="btn pri" href="https://github.com/lyove/next-popover#readme" target="_blank">
+            Get Started
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
         </div>
-        <p class="tagline">
-          Next-Popover is a lightWeight and powerful popover plugin with vanillaJS. Simple, modern, and highly customizable.
+        <p class="txt">
+          Next-Popover is a lightWeight and powerful popover plugin with vanillaJS.<br />
+          Simple, modern, and highly customizable.
         </p>
       </div>
     </div>
@@ -87,14 +88,20 @@
                 openDelay <input type="range" name="openDelay" min="0" max="3000" value="0" />
                 <span class="open-delay">0ms</span></label>
               <label style="flex: 1">
-                closeDelay <input type="range" name="closeDelay" min="0" max="3000" value="0" />
-                <span class="close-delay">0ms</span>
+                closeDelay <input type="range" name="closeDelay" min="0" max="3000" value="50" />
+                <span class="close-delay">50ms</span>
               </label>
             </div>
           </fieldset>
         </div>
+        <div class="mount">
+          <fieldset>
+            <legend>MountContainer</legend>
+            <label><input type="radio" name="mount" value="triggerParent" checked />Trigger.parentElement</label>
+            <label><input type="radio" name="mount" value="body" />Document.Body</label>
+          </fieldset>
+        </div>
       </div>
-      <p class="center"><button id="destroy">Destory</button></p>
       <div class="mount-container">
         <div class="scroll-box">
           <div class="trigger-outer">

@@ -1,7 +1,28 @@
 import { $getAbsoluteCoords, $setStyle } from "./utils";
+import { PlacementType } from "./constant";
+
+interface ParamProps {
+  triggerElement: HTMLElement;
+  popoverElement: HTMLElement;
+  arrowElement?: HTMLElement | undefined;
+  mountContainer?: HTMLElement | undefined;
+  placement: PlacementType | "auto";
+  margin?: number;
+  transitionDistance?: number;
+}
+
+interface PositonResult {
+  left: number;
+  top: number;
+  arrowLeft: number;
+  arrowTop: number;
+  fromLeft: number;
+  fromTop: number;
+  placement: PlacementType;
+}
 
 // getm more visible sides
-const getMoreVisibleSides = ($element) => {
+const getMoreVisibleSides = ($element: HTMLElement) => {
   if (!$element) {
     return {};
   }
@@ -44,7 +65,7 @@ export default function getPosition({
   margin = 0,
   // Distance to translate on show/hide animation (in pixel), default 10
   transitionDistance = 10,
-}) {
+}: ParamProps): PositonResult {
   // init
   if (!triggerElement || !popoverElement) {
     throw new Error("Couldn't initiate");
@@ -78,22 +99,25 @@ export default function getPosition({
   const mountContainerWidth = mountContainerCoords.width;
   const mountContainerHeight = mountContainerCoords.height;
   const mountContainerTop = mountContainerCoords.top;
-  const mountContainerRight = mountContainerCoords.right;
-  const mountContainerBotttom = mountContainerCoords.bottom;
   const mountContainerLeft = mountContainerCoords.left;
 
   /** find the placement which has more space */
   if (placement === "auto") {
     const moreVisibleSides = getMoreVisibleSides(triggerElement);
-    placement = moreVisibleSides.vertical;
+    placement = moreVisibleSides.vertical as PlacementType;
   }
 
   // placements splitting
-  const mainPlacement = placement.split("-")[0];
+  const mainPlacement: string = placement.split("-")[0];
   const secondaryPlacement = placement.split("-")[1];
 
   // placements value
-  const placementsValue = {
+  const placementsValue: {
+    [key: string]: {
+      top: number;
+      left: number;
+    };
+  } = {
     // top-left
     "top-start": {
       top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
@@ -230,7 +254,7 @@ export default function getPosition({
   /** if popover element is hidden in the given position, show it on opposite position */
   if (inversePlacement) {
     const inversePlacementValue = placementsValue[inversePlacement];
-    placement = inversePlacement;
+    placement = inversePlacement as PlacementType;
 
     if (mainPlacement === "top" || mainPlacement === "bottom") {
       top = inversePlacementValue.top;
@@ -240,7 +264,12 @@ export default function getPosition({
   }
 
   // data-from-* mapping
-  const dataFromMapping = {
+  const dataFromMapping: {
+    [key: string]: {
+      fromTop: number;
+      fromLeft: number;
+    };
+  } = {
     top: {
       fromTop: top + transitionDistance,
       fromLeft: left,

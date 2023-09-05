@@ -2,7 +2,7 @@ import Popover, { PlacementType, EmitType } from "../src";
 import { $ } from "../src/utils";
 
 window.onload = function () {
-  const mountElement = (document.querySelector(".mount-container") || document.body) as HTMLElement;
+  const mountElement = document.querySelector(".mount-container") as HTMLElement;
   const scrollBox = document.querySelector(".scroll-box") as HTMLElement;
   const trigger = document.querySelector("#trigger") as HTMLElement;
   const content = $({
@@ -19,18 +19,17 @@ window.onload = function () {
 
   // default
   const singleConfig = {
-    // mountContainer: mountElement,
+    mountContainer: mountElement,
     content,
     trigger: trigger,
     wrapperClass: "single-popover",
     showArrow: true,
+    placement: PlacementType.Top,
+    emit: EmitType.Click,
     autoUpdate: true,
     animationClass: "fade",
-    placement: PlacementType.Top,
-    openDelay: 0,
+    openDelay: 50,
     closeDelay: 50,
-    emit: EmitType.Click,
-    open: false,
   };
 
   const singlePopover = new Popover({
@@ -53,33 +52,27 @@ window.onload = function () {
   configure.onchange = ({ target }) => {
     const { name, value, checked } = target as any;
     if (name === "placement") {
-      singlePopover.updateConfig({
-        ...singleConfig,
-        placement: value,
-      });
+      singleConfig.placement = value;
     } else if (name === "emit") {
       if (value === "hover") {
         trigger.innerHTML = "Hover Me";
       } else if (value === "click") {
         trigger.innerHTML = "Click Me";
       }
-      singlePopover.updateConfig({
-        ...singleConfig,
-        emit: value,
-      });
+      singleConfig.emit = value;
     } else if (name === "extra") {
       if (value === "css") {
-        singlePopover.updateConfig({
-          ...singleConfig,
-          animationClass: checked ? "fade" : "",
-        });
+        singleConfig.animationClass = checked ? "fade" : "";
       } else {
-        singlePopover.updateConfig({
-          ...singleConfig,
-          ...{ [singleConfig[value]]: checked },
-        });
+        singleConfig[value] = checked;
       }
+    } else if (name === "mount") {
+      singleConfig.mountContainer = value === "triggerParent" ? mountElement : document.body;
     }
+
+    singlePopover.updateConfig({
+      ...singleConfig,
+    });
   };
 
   const openDelay = document.querySelector(".open-delay") as HTMLElement;
@@ -91,24 +84,14 @@ window.onload = function () {
     if (name === "openDelay") {
       openDelay.textContent = `${value}ms`;
       singleConfig.openDelay = Number(value);
-      singlePopover.updateConfig({
-        ...singleConfig,
-        openDelay: Number(value),
-      });
     } else if (name === "closeDelay") {
       closeDelay.textContent = `${value}ms`;
       singleConfig.closeDelay = Number(value);
-      singlePopover.updateConfig({
-        ...singleConfig,
-        closeDelay: Number(value),
-      });
     }
-  };
 
-  // Destroy
-  const destroyBtn = document.getElementById("destroy") as HTMLElement;
-  destroyBtn.onclick = () => {
-    singlePopover.destroy();
+    singlePopover.updateConfig({
+      ...singleConfig,
+    });
   };
 
   /**
