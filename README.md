@@ -33,9 +33,11 @@ import Popover, { PlacementType, EmitType } from 'next-popover'
 
 const trigger = document.querySelector('.trigger'); 
 
-const content = document.createElement('div'); // You need to pop up the displayed content
-content.classList.add('content');
-content.innerHTML = "Hello Next-Popover";
+const content = "Hello Next-Popover";
+// or
+// const content = document.createElement('div'); // You need to pop up the displayed content
+// content.classList.add('content');
+// content.innerHTML = "Hello Next-Popover";
 
 const mountContainer = document.querySelector('.mount-container'); // default: document.body
 
