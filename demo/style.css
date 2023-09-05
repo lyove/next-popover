@@ -26,13 +26,15 @@ header {
   height: 60px;
   position: fixed;
   top: 0;
+  display: flex;
+  justify-content: space-between;
   padding: 0 16px;
   background-color: #fff;
   box-shadow: rgba(2, 1, 1, 0.1) 0px 5px 20px -5px;
   z-index: 999;
 }
 
-header span {
+header span.title {
   display: inline-block;
   line-height: 60px;
   font-size: 28px;
@@ -42,40 +44,24 @@ header span {
   -webkit-text-fill-color: transparent;
 }
 
-/**
- * Feature
- =====================================*/
-.feature {
-  margin-top: 60px;
-  padding: 24px 0;
-}
 
-.description {
-  width: 800px;
-  margin: 16px auto 16px;
-  text-align: center;
-}
-
-.description .txt {
-  font-size: 20px;
-}
-
-.description .btn-row {
+header .btn-row {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 12px;
 }
 
-.description .btn {
+header .btn-row .btn {
   display: flex;
   align-items: center;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   margin-right: 20px;
   cursor: pointer;
   user-select: none;
   background-color: rgba(46, 50, 56, 0.05);
-  padding: 12px 16px;
+  padding: 4px 8px;
   border-radius: 4px;
   text-decoration: none;
   transition: opacity 0.2s ease;
@@ -84,11 +70,11 @@ header span {
   opacity: 0.8;
 }
 
-.description .btn:hover {
+header .btn-row .btn:hover {
   background-color: rgba(46, 50, 56, 0.09);
 }
 
-.description .btn.pri {
+header .btn-row .btn.pri {
   color: #000;
   background: linear-gradient(
     to right bottom,
@@ -98,13 +84,29 @@ header span {
   );
 }
 
-.description .btn svg {
+header .btn-row .btn svg {
   margin: 0 5px;
 }
 
-.description .btn:hover,
-.description .btn:active {
+header .btn-row .btn:hover,
+header .btn-row .btn:active {
   opacity: 1;
+}
+
+/**
+ * Feature
+ =====================================*/
+.feature {
+  margin-top: 60px;
+  padding: 16px 0;
+}
+
+.description {
+  text-align: center;
+}
+
+.description .txt {
+  font-size: 20px;
 }
 
 /**
@@ -254,7 +256,7 @@ header span {
  */
 /* content */
 .popover-wrapper.single-popover .popover-content {
-  width: 100px;
+  min-width: 100px;
   height: 150px;
   display: flex;
   align-items: center;
