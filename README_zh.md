@@ -34,9 +34,11 @@ import Popover, { PlacementType, EmitType } from 'next-popover'
 
 const trigger = document.querySelector('.trigger'); 
 
-const content = document.createElement('div'); // 需要弹出显示的内容
-content.classList.add('content');
-content.innerHTML = "Hello Next-Popover";
+const content = "Hello Next-Popover";
+// 或者
+// const content = document.createElement('div');
+// content.classList.add('content');
+// content.innerHTML = "Hello Next-Popover";
 
 const mountContainer = document.querySelector('.mount-container'); // 默认: document.body
 
