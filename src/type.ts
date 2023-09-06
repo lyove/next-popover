@@ -3,9 +3,9 @@ import type { EmitType, PlacementType } from "./constant";
 export interface PopoverConfig {
   trigger: HTMLElement;
   content: HTMLElement | string | number;
-  mountContainer?: HTMLElement;
   placement?: PlacementType;
   showArrow?: boolean;
+  appendTo?: HTMLElement;
   emit?: EmitType;
   autoUpdate?: boolean;
   defaultOpen?: boolean;
