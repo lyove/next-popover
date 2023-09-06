@@ -14,7 +14,7 @@ const ArrowClass = "popover-arrow";
 const DefaultConfig: Partial<PopoverConfig> = {
   placement: PlacementType.Top,
   showArrow: true,
-  mountContainer: document.body,
+  appendTo: document.body,
   autoUpdate: true,
   emit: EmitType.Click,
   animationClass: "fade",
@@ -31,7 +31,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
 export default class Popover {
   /* public property */
   config!: PopoverConfig;
-  originElement!: HTMLElement;
+  popoverRoot!: HTMLElement;
   popoverWrapper!: HTMLElement;
   popoverContent!: HTMLElement;
   arrowElement?: HTMLElement;
@@ -72,8 +72,6 @@ export default class Popover {
         throw new Error("Invalid configuration");
       }
       this.init();
-    } else {
-      throw new Error("Invalid config");
     }
   }
 
@@ -81,7 +79,7 @@ export default class Popover {
    * Initialize
    */
   protected init() {
-    const { trigger, mountContainer, autoUpdate, defaultOpen } = this.config;
+    const { trigger, appendTo, autoUpdate, defaultOpen } = this.config;
 
     // create popover
     this.#createPopover();
@@ -100,7 +98,7 @@ export default class Popover {
 
     // listen scroll
     if (this.#needListenScroll()) {
-      this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, mountContainer!);
+      this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, appendTo!);
     }
 
     // default open
@@ -167,9 +165,9 @@ export default class Popover {
 
     const computedPosition = getPosition({
       triggerElement: config.trigger,
-      popoverElement: this.originElement,
+      popoverElement: this.popoverRoot,
       arrowElement: this.arrowElement,
-      mountContainer: config.mountContainer,
+      appendToElement: config.appendTo,
       placement: config.placement ? config.placement : PlacementType.Top,
       margin: 8,
     });
@@ -187,8 +185,8 @@ export default class Popover {
       this.#prevPlacement = placement;
     }
 
-    $showDomElement(this.originElement);
-    $setStyle(this.originElement, { transform: `translate3d(${x}px,${y}px,0)` });
+    $showDomElement(this.popoverRoot);
+    $setStyle(this.popoverRoot, { transform: `translate3d(${x}px,${y}px,0)` });
 
     if (config.showArrow && this.arrowElement) {
       $setStyle(this.arrowElement, { transform: `translate(${arrowX}px,${arrowY}px)` });
@@ -286,7 +284,7 @@ export default class Popover {
    * @param config
    */
   updateConfig(newConfig: Partial<PopoverConfig>) {
-    const { trigger, triggerOpenClass, mountContainer } = this.config;
+    const { trigger, triggerOpenClass, appendTo } = this.config;
 
     function getChangedAttrs<T extends Record<string, any>>(
       newV: Partial<T>,
@@ -332,7 +330,7 @@ export default class Popover {
             const need = this.#needListenScroll();
             if (need) {
               if (!this.#scrollElements) {
-                this.#scrollElements = this.#getScrollElements(trigger, mountContainer!);
+                this.#scrollElements = this.#getScrollElements(trigger, appendTo!);
               }
             } else if (this.#scrollElements) {
               this.#removeScrollEvent();
@@ -350,20 +348,6 @@ export default class Popover {
           }
           break;
 
-        case "mountContainer":
-          if ((o as HTMLElement).contains(this.originElement)) {
-            (o as HTMLElement).removeChild(this.originElement);
-          }
-          if (!n || !(n instanceof HTMLElement)) {
-            this.config.mountContainer = document.body;
-          }
-          this.config.mountContainer = n as HTMLElement;
-          if (this.#resizeObserver) {
-            this.#resizeObserver.unobserve(o as HTMLElement);
-            this.#resizeObserver.observe(n as HTMLElement);
-          }
-          break;
-
         case "showArrow":
           if (n) {
             this.arrowElement = this.arrowElement || this.#createArrow();
@@ -373,6 +357,20 @@ export default class Popover {
               this.popoverWrapper.removeChild(this.arrowElement);
             }
             this.arrowElement = undefined;
+          }
+          break;
+
+        case "appendTo":
+          if ((o as HTMLElement).contains(this.popoverRoot)) {
+            (o as HTMLElement).removeChild(this.popoverRoot);
+          }
+          if (!n || !(n instanceof HTMLElement)) {
+            this.config.appendTo = document.body;
+          }
+          this.config.appendTo = n as HTMLElement;
+          if (this.#resizeObserver) {
+            this.#resizeObserver.unobserve(o as HTMLElement);
+            this.#resizeObserver.observe(n as HTMLElement);
           }
           break;
 
@@ -408,10 +406,7 @@ export default class Popover {
             const need = this.#needListenScroll();
             if (need) {
               if (!this.#scrollElements) {
-                this.#scrollElements = this.#getScrollElements(
-                  trigger as HTMLElement,
-                  mountContainer!,
-                );
+                this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, appendTo!);
                 if (this.opened) {
                   this.#scrollElements?.forEach((e) => {
                     e.addEventListener("scroll", this.#onScroll, { passive: true });
@@ -479,16 +474,16 @@ export default class Popover {
    * Destroy the Popover instance.
    */
   destroy() {
-    const { mountContainer } = this.config;
+    const { appendTo } = this.config;
     if (this.#resizeObserver) {
       this.#resizeObserver.disconnect();
       this.#resizeObserver = undefined;
     }
     if (this.opened) {
-      if (mountContainer?.contains(this.originElement)) {
-        mountContainer?.removeChild(this.originElement);
+      if (appendTo?.contains(this.popoverRoot)) {
+        appendTo?.removeChild(this.popoverRoot);
       }
-      $setStyle(this.originElement, { transform: "" });
+      $setStyle(this.popoverRoot, { transform: "" });
     }
 
     cancelAnimationFrame(this.#showRaf!);
@@ -522,8 +517,8 @@ export default class Popover {
       ...DefaultConfig,
       ...config,
     };
-    if (!cfg.mountContainer) {
-      cfg.mountContainer = document.body;
+    if (!cfg.appendTo) {
+      cfg.appendTo = document.body;
     }
     if (typeof cfg.closeDelay === "number" && cfg.closeDelay < 50) {
       cfg.closeDelay = 50;
@@ -532,10 +527,10 @@ export default class Popover {
   }
 
   #createPopover() {
-    const { content, mountContainer, wrapperClass, showArrow } = this.config;
+    const { content, appendTo, wrapperClass, showArrow } = this.config;
 
     // Positioning Element
-    this.originElement = $({
+    this.popoverRoot = $({
       tagName: "div",
       attributes: {
         id: NextPopoverId,
@@ -549,11 +544,11 @@ export default class Popover {
         class: `${WrapperClassName}${wrapperClass ? ` ${wrapperClass}` : ""}`,
       },
     });
-    this.originElement.appendChild(this.popoverWrapper);
+    this.popoverRoot.appendChild(this.popoverWrapper);
 
     // Popover mounted elements
-    if (mountContainer && mountContainer !== document.body) {
-      $setStyle(mountContainer, { position: "relative" });
+    if (appendTo && appendTo !== document.body) {
+      $setStyle(appendTo, { position: "relative" });
     }
 
     if (showArrow) {
@@ -584,16 +579,16 @@ export default class Popover {
   }
 
   #show() {
-    const { mountContainer } = this.config;
-    mountContainer!.appendChild(this.originElement);
+    const { appendTo } = this.config;
+    appendTo!.appendChild(this.popoverRoot);
   }
 
   #hide() {
-    const { mountContainer } = this.config;
-    if (mountContainer?.contains(this.originElement)) {
-      mountContainer!.removeChild(this.originElement);
+    const { appendTo } = this.config;
+    if (appendTo?.contains(this.popoverRoot)) {
+      appendTo!.removeChild(this.popoverRoot);
     }
-    $setStyle(this.originElement, { transform: "" });
+    $setStyle(this.popoverRoot, { transform: "" });
   }
 
   #setAnimationClass() {
@@ -679,14 +674,14 @@ export default class Popover {
   #addOriginEvent() {
     const { enterable, emit } = this.config;
     if (enterable && emit === EmitType.Hover) {
-      this.originElement.addEventListener("mouseenter", this.#onOriginEnter);
-      this.originElement.addEventListener("mouseleave", this.#onOriginLeave);
+      this.popoverRoot.addEventListener("mouseenter", this.#onOriginEnter);
+      this.popoverRoot.addEventListener("mouseleave", this.#onOriginLeave);
     }
   }
 
   #removeOriginEvent() {
-    this.originElement.removeEventListener("mouseenter", this.#onOriginEnter);
-    this.originElement.removeEventListener("mouseleave", this.#onOriginLeave);
+    this.popoverRoot.removeEventListener("mouseenter", this.#onOriginEnter);
+    this.popoverRoot.removeEventListener("mouseleave", this.#onOriginLeave);
   }
 
   #onScroll = throttle(() => {
@@ -807,16 +802,16 @@ export default class Popover {
   };
 
   #needListenScroll() {
-    const { trigger, mountContainer } = this.config;
-    return trigger instanceof HTMLElement && mountContainer;
+    const { trigger, appendTo } = this.config;
+    return trigger instanceof HTMLElement && appendTo;
   }
 
-  #getScrollElements(element: HTMLElement, mountContainer: HTMLElement) {
+  #getScrollElements(element: HTMLElement, appendTo: HTMLElement) {
     const scrollElements: HTMLElement[] = [];
     const isScrollElement = (el: HTMLElement) => {
       return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth;
     };
-    while (element instanceof HTMLElement && element !== mountContainer) {
+    while (element instanceof HTMLElement && element !== appendTo) {
       if (isScrollElement(element)) {
         scrollElements.push(element);
       }
@@ -826,10 +821,10 @@ export default class Popover {
   }
 
   #observe() {
-    const { trigger, mountContainer } = this.config;
+    const { trigger, appendTo } = this.config;
     const robs = (this.#resizeObserver = new ResizeObserver(() => this.update()));
     robs.observe(this.popoverWrapper);
-    robs.observe(mountContainer!);
+    robs.observe(appendTo!);
     if (trigger instanceof HTMLElement) {
       robs.observe(trigger);
     }
