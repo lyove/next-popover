@@ -42,12 +42,12 @@ const content = "Hello Next-Popover";
 // content.classList.add('content');
 // content.innerHTML = "Hello Next-Popover";
 
-const mountContainer = document.querySelector('.mount-container'); // 默认: document.body
+const appendTo = document.querySelector('.mount-container'); // 默认: document.body
 
 const popover = new Popover({
   trigger, // 必填
   content, // 必填
-  mountContainer,
+  appendTo,
   placement: PlacementType.Top, // 设置弹框位置
   emit: EmitType.Hover // 设置鼠标 hover 在 trigger 上时打开弹框
 });
@@ -147,7 +147,7 @@ new Popover({
 | -- | -- | -- | -- |
 | `trigger` | `HTMLElement` | | `必需`，触发元素 |
 | `content` | `HTMLElement \| string \| number` | | `必需`，要弹出的内容元素 |
-| `mountContainer` | `HTMLElement` | `document.body` | 弹框的挂载容器 |
+| `appendTo` | `HTMLElement` | `document.body` | 弹框的挂载容器 |
 | `placement` | `PlacementType` | `PlacementType.Top` | 弹框的位置 |
 | `showArrow` | `Boolean` | `true` | 是否显示箭头元素 |
 | `emit` | `EmitType` | `EmitType.Click`  | 触发弹出类型 |
@@ -175,7 +175,7 @@ new Popover({
 | 参数 | 类型 | 描述 |
 | -- | -- | -- |
 | `config` | `PopoverConfig` | Popover 配置参数 |
-| `originElement` | `HTMLElement` | 弹框外层元素元素 |
+| `popoverRoot` | `HTMLElement` | 弹框根元素 |
 | `popoverWrapper` | `HTMLElement` | 弹框元素 |
 | `popoverContent` | `HTMLElement` | 弹框内容元素 |
 | `arrowElement` | `HTMLElement` | 箭头元素 |
