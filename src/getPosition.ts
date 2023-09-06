@@ -4,8 +4,8 @@ import { PlacementType } from "./constant";
 interface ParamProps {
   triggerElement: HTMLElement;
   popoverElement: HTMLElement;
-  arrowElement?: HTMLElement | undefined;
-  mountContainer?: HTMLElement | undefined;
+  arrowElement?: HTMLElement;
+  appendToElement?: HTMLElement;
   placement: PlacementType | "auto";
   margin?: number;
 }
@@ -55,7 +55,7 @@ export default function getPosition({
   // Arrow icon in the popover
   arrowElement,
   // mount container for popover
-  mountContainer = document.body,
+  appendToElement = document.body,
   // Placement of popover(top, bottom, left, right, auto), default auto
   placement = "auto",
   // Space between popover and its trigger (in pixel), default 0
@@ -89,12 +89,12 @@ export default function getPosition({
   const popoverElementBotttom = popoverElementCoords.bottom;
   const popoverElementLeft = popoverElementCoords.left;
 
-  // mountContainer Rect
-  const mountContainerCoords = $getAbsoluteCoords(mountContainer);
-  const mountContainerWidth = mountContainerCoords.width;
-  const mountContainerHeight = mountContainerCoords.height;
-  const mountContainerTop = mountContainerCoords.top;
-  const mountContainerLeft = mountContainerCoords.left;
+  // appendToElement Rect
+  const appendToElementCoords = $getAbsoluteCoords(appendToElement);
+  const appendToElementWidth = appendToElementCoords.width;
+  const appendToElementHeight = appendToElementCoords.height;
+  const appendToElementTop = appendToElementCoords.top;
+  const appendToElementLeft = appendToElementCoords.left;
 
   /** find the placement which has more space */
   if (placement === "auto") {
@@ -192,11 +192,11 @@ export default function getPosition({
   let bottomEdge = window.innerHeight + topEdge;
   let leftEdge = window.scrollX - popoverElementLeft;
   let rightEdge = window.innerWidth + leftEdge;
-  if (mountContainer !== document.body) {
-    topEdge = mountContainerTop - popoverElementTop;
-    bottomEdge = mountContainerHeight + topEdge;
-    leftEdge = mountContainerLeft - popoverElementLeft;
-    rightEdge = mountContainerWidth + leftEdge;
+  if (appendToElement !== document.body && appendToElement.contains(triggerElement)) {
+    topEdge = appendToElementTop - popoverElementTop;
+    bottomEdge = appendToElementHeight + topEdge;
+    leftEdge = appendToElementLeft - popoverElementLeft;
+    rightEdge = appendToElementWidth + leftEdge;
   }
 
   // inverse placement
