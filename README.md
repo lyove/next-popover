@@ -42,12 +42,12 @@ const content = "Hello Next-Popover";
 // content.classList.add('content');
 // content.innerHTML = "Hello Next-Popover";
 
-const mountContainer = document.querySelector('.mount-container'); // default: document.body
+const appendTo = document.querySelector('.mount-container'); // default: document.body
 
 const popover = new Popover({
   trigger, // required
   content, // required
-  mountContainer,
+  appendTo,
   placement: PlacementType.Top, // Set the position of the popover
   emit: EmitType.Hover // Set to open the popover when the mouse hovers over the trigger
 });
@@ -147,7 +147,7 @@ new Popover({
 | -- | -- | -- | -- |
 | `trigger` | `HTMLElement ` | | `Required`. The trigger element |
 | `content` | `HTMLElement \| string \| number` | | `Required`. The content element to be popped up |
-| `mountContainer` | `HTMLElement` | `document.body` | Mount container for popover. |
+| `appendTo` | `HTMLElement` | `document.body` | The element to append the popover to. |
 | `placement` | `PlacementType` | `PlacementType.Top` | The placement of the popover. |
 | `showArrow` | `Boolean` | `true` | Whether to show arrow |
 | `emit` | `EmitType` | `EmitType.Click` | Trigger emit type |
@@ -175,7 +175,7 @@ new Popover({
 | Name | Type | Description |
 | -- | -- | -- |
 | `config` | `PopoverConfig` | Popover configuration object |
-| `originElement` | `HTMLElement` | The popover outer element |
+| `popoverRoot` | `HTMLElement` | The popover root element |
 | `popoverWrapper` | `HTMLElement` | The popover wrapper element |
 | `popoverContent` | `HTMLElement` | The popover Content element |
 | `arrowElement` | `HTMLElement` | The popover arrow element |
