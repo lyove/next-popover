@@ -19,9 +19,9 @@ window.onload = function () {
 
   // default
   const singleConfig = {
-    mountContainer: mountElement,
     content,
     trigger: trigger,
+    appendTo: mountElement,
     wrapperClass: "single-popover",
     showArrow: true,
     placement: PlacementType.Top,
@@ -67,7 +67,7 @@ window.onload = function () {
         singleConfig[value] = checked;
       }
     } else if (name === "mount") {
-      singleConfig.mountContainer = value === "triggerParent" ? mountElement : document.body;
+      singleConfig.appendTo = value === "triggerParent" ? mountElement : document.body;
     }
 
     singlePopover.updateConfig({
@@ -103,8 +103,8 @@ window.onload = function () {
   const multiPopovers: any[] = [];
 
   const multiConfig = {
-    mountContainer: document.body,
     content: "Next-Popover",
+    appendTo: document.body,
     wrapperClass: "multi-popover",
     animationClass: "fade",
     placement: PlacementType.Top,
