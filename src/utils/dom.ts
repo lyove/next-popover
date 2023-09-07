@@ -64,7 +64,7 @@ export function $clearChildren($element: Element) {
  * Show element
  * @param element HTMLElement
  */
-export function $showDomElement(element: HTMLElement) {
+export function $showElementByOpacity(element: HTMLElement) {
   const { style } = element;
   style.opacity = "1";
   style.pointerEvents = "auto";
@@ -74,7 +74,7 @@ export function $showDomElement(element: HTMLElement) {
  * Hide element
  * @param element HTMLElement
  */
-export function $hideDomElement(element: HTMLElement) {
+export function $hideElementByOpacity(element: HTMLElement) {
   const { style } = element;
   style.opacity = "0";
   style.pointerEvents = "none";
@@ -154,5 +154,19 @@ export function $getAbsoluteCoords($element: HTMLElement) {
     right: boxRect.right + pageX,
     bottom: boxRect.bottom + pageY,
     left: boxRect.left + pageX,
+  };
+}
+
+/**
+ * Get mouse coordinates
+ * @param event MouseEvent
+ * @returns ojbect
+ */
+export function $getCursorCoords(event: MouseEvent) {
+  const x = event.pageX || event.clientX + document.body.scrollLeft;
+  const y = event.pageY || event.clientY + document.body.scrollTop;
+  return {
+    x,
+    y,
   };
 }
