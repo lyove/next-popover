@@ -1,6 +1,14 @@
 import type { PopoverConfig, AnimationClass } from "./type";
 import getPosition from "./getPosition";
-import { $, $showDomElement, $setStyle, $getStyleProperties, throttle } from "./utils";
+import {
+  $,
+  $showElementByOpacity,
+  $setStyle,
+  $getStyleProperties,
+  $getAbsoluteCoords,
+  $getCursorCoords,
+  throttle,
+} from "./utils";
 import { EmitType, PlacementType } from "./constant";
 import "./style/index.scss";
 
@@ -22,6 +30,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
   enterable: true,
   openDelay: 100,
   closeDelay: 50,
+  margin: 8,
 };
 
 /**
@@ -91,7 +100,7 @@ export default class Popover {
 
     // add event
     this.#addTriggerEvent();
-    this.#addOriginEvent();
+    this.#addPopRootEvent();
 
     // set animation
     this.#setAnimationClass();
@@ -128,11 +137,12 @@ export default class Popover {
       // remove existing popover when opening a new none
       this.cleanup();
 
-      this.#show();
+      this.#showPopover();
       this.#scrollElements?.forEach((e) => {
         e.addEventListener("scroll", this.#onScroll, { passive: true });
       });
       document.addEventListener("click", this.#onDocClick);
+      document.addEventListener("mousemove", this.#onMouseMove);
     }
 
     this.opened = true;
@@ -169,7 +179,7 @@ export default class Popover {
       arrowElement: this.arrowElement,
       appendToElement: config.appendTo,
       placement: config.placement ? config.placement : PlacementType.Top,
-      margin: 8,
+      margin: config.margin,
     });
 
     const { placement, left: x, top: y, arrowLeft: arrowX, arrowTop: arrowY } = computedPosition;
@@ -182,11 +192,12 @@ export default class Popover {
         this.popoverWrapper.classList.remove(`${config.animationClass}-${this.#prevPlacement}`);
       }
       this.popoverWrapper.classList.add(`${config.animationClass}-${placement}`);
-      this.#prevPlacement = placement;
     }
 
-    $showDomElement(this.popoverRoot);
+    this.#prevPlacement = placement;
+
     $setStyle(this.popoverRoot, { transform: `translate3d(${x}px,${y}px,0)` });
+    $showElementByOpacity(this.popoverRoot);
 
     if (config.showArrow && this.arrowElement) {
       $setStyle(this.arrowElement, { transform: `translate(${arrowX}px,${arrowY}px)` });
@@ -225,7 +236,7 @@ export default class Popover {
         transitionInfo.promise.then(this.#onHideTransitionEnd);
       });
     } else {
-      this.#hide();
+      this.#hidePopover();
     }
 
     if (triggerOpenClass) {
@@ -234,10 +245,10 @@ export default class Popover {
 
     this.#removeScrollEvent();
     this.#removeDocClick();
+    this.#removeMouseMove();
     if (onClose) {
       onClose();
     }
-    document.removeEventListener("click", this.#onDocClick);
   }
 
   /**
@@ -379,8 +390,9 @@ export default class Popover {
           if (n) {
             this.#addTriggerEvent();
           }
-          this.#removeOriginEvent();
-          this.#addOriginEvent();
+          this.#removePopRootEvent();
+          this.#addPopRootEvent();
+          this.#removeMouseMove();
           break;
 
         case "autoUpdate":
@@ -395,10 +407,11 @@ export default class Popover {
           break;
 
         case "enterable":
-          this.#removeOriginEvent();
+          this.#removePopRootEvent();
           if (n) {
-            this.#addOriginEvent();
+            this.#addPopRootEvent();
           }
+          this.#removeMouseMove();
           break;
 
         case "closeOnScroll":
@@ -497,7 +510,8 @@ export default class Popover {
     this.#removeScrollEvent();
     this.#removeDocClick();
     this.#removeTriggerEvent();
-    this.#removeOriginEvent();
+    this.#removePopRootEvent();
+    this.#removeMouseMove();
   }
 
   /**
@@ -519,9 +533,6 @@ export default class Popover {
     };
     if (!cfg.appendTo) {
       cfg.appendTo = document.body;
-    }
-    if (typeof cfg.closeDelay === "number" && cfg.closeDelay < 50) {
-      cfg.closeDelay = 50;
     }
     return cfg;
   }
@@ -578,12 +589,12 @@ export default class Popover {
     });
   }
 
-  #show() {
+  #showPopover() {
     const { appendTo } = this.config;
     appendTo!.appendChild(this.popoverRoot);
   }
 
-  #hide() {
+  #hidePopover() {
     const { appendTo } = this.config;
     if (appendTo?.contains(this.popoverRoot)) {
       appendTo!.removeChild(this.popoverRoot);
@@ -624,7 +635,22 @@ export default class Popover {
     this.openWithDelay();
   };
 
-  #onTriggerLeave = () => {
+  #onTriggerLeave = (event: MouseEvent) => {
+    const { config } = this;
+
+    if (config.enterable) {
+      const cursorXY = $getCursorCoords(event);
+      const interactiveBoundary = this.#getPopInteractiveBoundary({
+        popElement: this.popoverRoot,
+        placement: this.#prevPlacement as PlacementType,
+        margin: config.margin || 0,
+      });
+      const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
+      if (isHoverOver) {
+        return;
+      }
+    }
+
     if (this.#isAnimating) {
       this.closed = true;
     }
@@ -652,7 +678,7 @@ export default class Popover {
     }
   }
 
-  #onOriginEnter = () => {
+  #onPopRootEnter = () => {
     this.#clearTimers();
     if (this.#isAnimating) {
       this.closed = true;
@@ -663,7 +689,22 @@ export default class Popover {
     this.openWithDelay();
   };
 
-  #onOriginLeave = () => {
+  #onPopRootLeave = (event: MouseEvent) => {
+    const { config } = this;
+
+    if (config.enterable) {
+      const cursorXY = $getCursorCoords(event);
+      const interactiveBoundary = this.#getPopInteractiveBoundary({
+        popElement: this.popoverRoot,
+        placement: this.#prevPlacement as PlacementType,
+        margin: config.margin || 0,
+      });
+      const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
+      if (isHoverOver) {
+        return;
+      }
+    }
+
     this.#clearTimers();
     if (this.#isAnimating) {
       this.closed = true;
@@ -671,17 +712,17 @@ export default class Popover {
     this.closeWithDelay();
   };
 
-  #addOriginEvent() {
+  #addPopRootEvent() {
     const { enterable, emit } = this.config;
     if (enterable && emit === EmitType.Hover) {
-      this.popoverRoot.addEventListener("mouseenter", this.#onOriginEnter);
-      this.popoverRoot.addEventListener("mouseleave", this.#onOriginLeave);
+      this.popoverRoot.addEventListener("mouseenter", this.#onPopRootEnter);
+      this.popoverRoot.addEventListener("mouseleave", this.#onPopRootLeave);
     }
   }
 
-  #removeOriginEvent() {
-    this.popoverRoot.removeEventListener("mouseenter", this.#onOriginEnter);
-    this.popoverRoot.removeEventListener("mouseleave", this.#onOriginLeave);
+  #removePopRootEvent() {
+    this.popoverRoot.removeEventListener("mouseenter", this.#onPopRootEnter);
+    this.popoverRoot.removeEventListener("mouseleave", this.#onPopRootLeave);
   }
 
   #onScroll = throttle(() => {
@@ -718,6 +759,31 @@ export default class Popover {
 
   #removeDocClick = () => {
     document.removeEventListener("click", this.#onDocClick);
+  };
+
+  #onMouseMove = (event: MouseEvent) => {
+    // TODO: tesing xxxxxxxxxxxxxx
+    const { config } = this;
+    if (config.enterable) {
+      const cursorXY = $getCursorCoords(event);
+      const triggerBoundary = this.#getTrigInteractiveBoundary(config.trigger);
+      const isHoverTrig = this.#isCursorInsideInteractiveBoundary(cursorXY, triggerBoundary);
+      if (!isHoverTrig) {
+        const popoverBoundary = this.#getPopInteractiveBoundary({
+          popElement: this.popoverRoot,
+          placement: this.#prevPlacement as PlacementType,
+          margin: config.margin || 0,
+        });
+        const isHoverPop = this.#isCursorInsideInteractiveBoundary(cursorXY, popoverBoundary);
+        if (!isHoverPop) {
+          this.closeWithDelay();
+        }
+      }
+    }
+  };
+
+  #removeMouseMove = () => {
+    document.removeEventListener("mousemove", this.#onMouseMove);
   };
 
   #getTransitionInfo(element: HTMLElement) {
@@ -788,11 +854,11 @@ export default class Popover {
   };
 
   #onHideTransitionEnd = () => {
-    const { onExited } = this.config;
+    this.#hidePopover();
     const { exitActive, exitTo } = this.#animationClass || {};
-    this.#hide();
     this.popoverWrapper.classList.remove(exitActive!, exitTo!);
     this.#isAnimating = false;
+    const { onExited } = this.config;
     if (onExited) {
       onExited();
     }
@@ -833,5 +899,85 @@ export default class Popover {
   #clearTimers = () => {
     clearTimeout(this.#openTimer);
     clearTimeout(this.#closeTimer);
+  };
+
+  #getTrigInteractiveBoundary = (trigElement: HTMLElement) => {
+    const trigElementCoords = $getAbsoluteCoords(trigElement);
+    const left = trigElementCoords.left;
+    const top = trigElementCoords.top;
+    const bottom = trigElementCoords.bottom;
+    const right = trigElementCoords.right;
+    return {
+      left: Math.trunc(left),
+      top: Math.trunc(top),
+      bottom: Math.trunc(bottom),
+      right: Math.trunc(right),
+    };
+  };
+
+  #getPopInteractiveBoundary = ({
+    popElement,
+    placement,
+    margin = 0,
+  }: {
+    popElement: HTMLElement;
+    placement: PlacementType;
+    margin: number;
+  }) => {
+    const {
+      Top,
+      TopStart,
+      TopEnd,
+      Left,
+      LeftStart,
+      LeftEnd,
+      Bottom,
+      BottomStart,
+      BottomEnd,
+      Right,
+      RightStart,
+      RightEnd,
+    } = PlacementType;
+    const popElementCoords = $getAbsoluteCoords(popElement);
+    let left = popElementCoords.left;
+    let top = popElementCoords.top;
+    let bottom = popElementCoords.bottom;
+    let right = popElementCoords.right;
+
+    if (placement === Top || placement === TopStart || placement === TopEnd) {
+      bottom += margin;
+    }
+
+    if (placement === Bottom || placement === BottomStart || placement === BottomEnd) {
+      top -= margin;
+    }
+
+    if (placement === Left || placement === LeftStart || placement === LeftEnd) {
+      right += margin;
+    }
+    if (placement === Right || placement === RightStart || placement === RightEnd) {
+      left -= margin;
+    }
+    return {
+      left: Math.trunc(left),
+      top: Math.trunc(top),
+      bottom: Math.trunc(bottom),
+      right: Math.trunc(right),
+    };
+  };
+
+  #isCursorInsideInteractiveBoundary = (
+    cursorXY: { x: number; y: number },
+    interactiveBoundary: {
+      top: number;
+      right: number;
+      bottom: number;
+      left: number;
+    },
+  ) => {
+    const { x, y } = cursorXY;
+    const { left, top, right, bottom } = interactiveBoundary;
+
+    return x >= left && x <= right && y >= top && y <= bottom;
   };
 }
