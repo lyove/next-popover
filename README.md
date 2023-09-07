@@ -2,7 +2,7 @@
 
 ![Header Image](public/Popover.png)
 
-Next-Popover is a smart popover library that can automatically pop up at a suitable position adjacent to the trigger.
+Next-Popover is a lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.
 
 [![Demo](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/next-popover-vywrrk)
 

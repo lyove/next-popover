@@ -2,7 +2,7 @@
 
 ![Header Image](public/Popover.png)
 
-Next-Popover 是一个体积小，功能轻大的弹出工具库，它可以自动定位到 Trigger 附近合适的位置。支持自定义CSS类动画。
+Next-Popover 是一个轻量级、简单的弹出框工具库，可用于Poopver、Tooltip、Dropdown等，没有任何依赖，且支持Typescript。
 
 [![Demo](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/next-popover-vywrrk)
 

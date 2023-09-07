@@ -885,21 +885,6 @@ export default class Popover {
     return scrollElements;
   }
 
-  #observe() {
-    const { trigger, appendTo } = this.config;
-    const robs = (this.#resizeObserver = new ResizeObserver(() => this.update()));
-    robs.observe(this.popoverWrapper);
-    robs.observe(appendTo!);
-    if (trigger instanceof HTMLElement) {
-      robs.observe(trigger);
-    }
-  }
-
-  #clearTimers = () => {
-    clearTimeout(this.#openTimer);
-    clearTimeout(this.#closeTimer);
-  };
-
   #getTrigInteractiveBoundary = (trigElement: HTMLElement) => {
     const trigElementCoords = $getAbsoluteCoords(trigElement);
     const left = trigElementCoords.left;
@@ -978,5 +963,20 @@ export default class Popover {
     const { left, top, right, bottom } = interactiveBoundary;
 
     return x >= left && x <= right && y >= top && y <= bottom;
+  };
+
+  #observe() {
+    const { trigger, appendTo } = this.config;
+    const robs = (this.#resizeObserver = new ResizeObserver(() => this.update()));
+    robs.observe(this.popoverWrapper);
+    robs.observe(appendTo!);
+    if (trigger instanceof HTMLElement) {
+      robs.observe(trigger);
+    }
+  }
+
+  #clearTimers = () => {
+    clearTimeout(this.#openTimer);
+    clearTimeout(this.#closeTimer);
   };
 }

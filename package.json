@@ -1,7 +1,7 @@
 {
   "name": "next-popover",
   "version": "0.0.0",
-  "description": "A lightweight smart javascript popup library",
+  "description": "A lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.",
   "repository": {
     "type": "git",
     "url": "https://github.com/lyove/next-popover"
