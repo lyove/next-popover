@@ -636,14 +636,14 @@ export default class Popover {
   };
 
   #onTriggerLeave = (event: MouseEvent) => {
-    const { config } = this;
+    const { emit, enterable, margin } = this.config;
 
-    if (config.enterable) {
+    if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
       const interactiveBoundary = this.#getPopInteractiveBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
-        margin: config.margin || 0,
+        margin: margin || 0,
       });
       const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
@@ -690,14 +690,14 @@ export default class Popover {
   };
 
   #onPopRootLeave = (event: MouseEvent) => {
-    const { config } = this;
+    const { emit, enterable, margin } = this.config;
 
-    if (config.enterable) {
+    if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
       const interactiveBoundary = this.#getPopInteractiveBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
-        margin: config.margin || 0,
+        margin: margin || 0,
       });
       const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
@@ -762,17 +762,16 @@ export default class Popover {
   };
 
   #onMouseMove = (event: MouseEvent) => {
-    // TODO: tesing xxxxxxxxxxxxxx
-    const { config } = this;
-    if (config.enterable) {
+    const { emit, enterable, trigger, margin } = this.config;
+    if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
-      const triggerBoundary = this.#getTrigInteractiveBoundary(config.trigger);
+      const triggerBoundary = this.#getTrigInteractiveBoundary(trigger);
       const isHoverTrig = this.#isCursorInsideInteractiveBoundary(cursorXY, triggerBoundary);
       if (!isHoverTrig) {
         const popoverBoundary = this.#getPopInteractiveBoundary({
           popElement: this.popoverRoot,
           placement: this.#prevPlacement as PlacementType,
-          margin: config.margin || 0,
+          margin: margin || 0,
         });
         const isHoverPop = this.#isCursorInsideInteractiveBoundary(cursorXY, popoverBoundary);
         if (!isHoverPop) {
