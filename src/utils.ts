@@ -175,48 +175,47 @@ export function $getCursorCoords(event: MouseEvent) {
  * Function Utils
  */
 
-export function throttle(fn: () => void, ctx?: any): any {
-  let pending = false;
-  let first = true;
-
+/**
+ * @desc Debounce
+ * @param {function} fn
+ * @param {number} delay
+ * @param {Boolean} immediate
+ */
+export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean) {
+  let timer: any = null;
   return function (...args: any) {
-    if (first) {
-      first = false;
-      return fn.apply(ctx, args);
+    if (timer) {
+      clearTimeout(timer);
     }
-
-    if (pending) {
-      return;
+    if (!timer && immediate) {
+      fn.apply(this, args);
+    } else {
+      timer = setTimeout(() => {
+        fn.apply(this, args);
+      }, delay);
     }
-
-    pending = true;
-
-    requestAnimationFrame(() => {
-      fn.apply(ctx, args);
-      pending = false;
-    });
   };
 }
 
-export function throttleTime(fn: () => void, time = 0, ctx?: any) {
-  let pending = false;
-  let first = true;
-
+/**
+ * Throttle
+ * @param {function} fn
+ * @param {number} delay
+ */
+export function throttle(fn: (arg?: any) => void, delay = 0) {
+  let pre = 0;
+  let timer: any = null;
   return function (...args: any) {
-    if (first) {
-      first = false;
-      return fn.apply(ctx, args);
+    console.log("throttle");
+    if (Date.now() - pre > delay) {
+      clearTimeout(timer);
+      timer = null;
+      pre = Date.now();
+      fn.apply(this, args);
+    } else {
+      timer = setTimeout(() => {
+        fn.apply(this, args);
+      }, delay);
     }
-
-    if (pending) {
-      return;
-    }
-
-    pending = true;
-
-    setTimeout(() => {
-      fn.apply(ctx, args);
-      pending = false;
-    }, time);
   };
 }
