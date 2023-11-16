@@ -129,6 +129,7 @@ export default class Popover {
       showArrow,
       appendTo,
       placement,
+      margin,
       onBeforeEnter,
       onOpen,
     } = this.config;
@@ -172,7 +173,7 @@ export default class Popover {
       arrowElement: this.arrowElement,
       appendToElement: appendTo,
       placement: placement ? placement : PlacementType.Top,
-      margin: config.margin,
+      margin: margin,
     });
 
     const {
@@ -294,7 +295,41 @@ export default class Popover {
    */
   update() {
     if (this.opened && !this.#isAnimating) {
-      this.open();
+      const { trigger, animationClass, showArrow, appendTo, placement, margin } = this.config;
+      const computedPosition = getPosition({
+        triggerElement: trigger,
+        popoverElement: this.popoverRoot,
+        arrowElement: this.arrowElement,
+        appendToElement: appendTo,
+        placement: placement ? placement : PlacementType.Top,
+        margin: margin,
+      });
+      const {
+        placement: position,
+        left: x,
+        top: y,
+        arrowLeft: arrowX,
+        arrowTop: arrowY,
+      } = computedPosition;
+
+      this.popoverWrapper.classList.remove(`placement-${this.#prevPlacement}`);
+      this.popoverWrapper.classList.add(`placement-${position}`);
+
+      if (this.#animationClass && position !== this.#prevPlacement) {
+        if (this.#prevPlacement) {
+          this.popoverWrapper.classList.remove(`${animationClass}-${this.#prevPlacement}`);
+        }
+        this.popoverWrapper.classList.add(`${animationClass}-${position}`);
+      }
+
+      this.#prevPlacement = position;
+
+      $setStyle(this.popoverRoot, { transform: `translate3d(${x}px,${y}px,0)` });
+      $showElementByOpacity(this.popoverRoot);
+
+      if (showArrow && this.arrowElement) {
+        $setStyle(this.arrowElement, { transform: `translate(${arrowX}px,${arrowY}px)` });
+      }
     }
   }
 
@@ -724,7 +759,7 @@ export default class Popover {
     } else {
       this.update();
     }
-  }, 100);
+  });
 
   #removeScrollEvent() {
     this.#scrollElements?.forEach((e) => e.removeEventListener("scroll", this.#onScroll));
