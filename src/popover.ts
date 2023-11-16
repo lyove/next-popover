@@ -29,7 +29,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
   animationClass: "fade",
   clickOutsideClose: true,
   enterable: true,
-  openDelay: 100,
+  openDelay: 50,
   closeDelay: 50,
   margin: 8,
 };
