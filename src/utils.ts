@@ -202,20 +202,25 @@ export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean)
  * @param {function} fn
  * @param {number} delay
  */
-export function throttle(fn: (arg?: any) => void, delay = 0) {
-  let pre = 0;
-  let timer: any = null;
+export function throttle(fn: () => void, ctx?: any): any {
+  let pending = false;
+  let first = true;
+
   return function (...args: any) {
-    console.log("throttle");
-    if (Date.now() - pre > delay) {
-      clearTimeout(timer);
-      timer = null;
-      pre = Date.now();
-      fn.apply(this, args);
-    } else {
-      timer = setTimeout(() => {
-        fn.apply(this, args);
-      }, delay);
+    if (first) {
+      first = false;
+      return fn.apply(ctx, args);
     }
+
+    if (pending) {
+      return;
+    }
+
+    pending = true;
+
+    requestAnimationFrame(() => {
+      fn.apply(ctx, args);
+      pending = false;
+    });
   };
 }
