@@ -1,5 +1,9 @@
 import type { EmitType, PlacementType } from "./constant";
 
+export type RequireOneKey<T, K extends keyof T> = {
+  [P in K]-?: T[P];
+} & Omit<T, K>;
+
 export interface PopoverConfig {
   trigger: HTMLElement;
   content: HTMLElement | string | number;
