@@ -112,8 +112,10 @@ window.onload = function () {
   };
 
   placementsItems.forEach((item) => {
+    const { placement } = item.dataset;
     const p = new Popover({
       ...multiConfig,
+      content: `Position:${placement}`,
       trigger: item,
       placement: item.dataset.placement as any,
     });
