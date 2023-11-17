@@ -139,7 +139,7 @@ export default class Popover {
 
     this.closed = false;
 
-    // remove existing popover when opening a new none
+    // Remove existing popover when opening a new none
     this.cleanup();
 
     this.#showPopover();
