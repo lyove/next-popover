@@ -17,7 +17,9 @@
     "noUnusedParameters": true,
     "noImplicitThis": false,
     "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vite/client", "node", "jest"],
+    "typeRoots": ["./node_modules", "./node_modules/@types/"]
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "node_modules", "test/**", ".history/**"]
