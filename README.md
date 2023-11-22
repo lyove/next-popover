@@ -106,12 +106,6 @@ You can write CSS styles like this:
 
 The closeOnScroll parameter controls whether the popover automatically closes when the trigger element is scrolled.
 
-<!-- The hideOnInvisible parameter controls whether the popover automatically hides when the trigger element is not visible on the screen. -->
-
-### AutoUpdate
-
-The autoUpdate parameter controls whether the popover's position is automatically updated when the size of the mount container, content, or trigger element changes. This feature relies on the [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver).
-
 ### Hook
 
 Popover provides rich hook functions that can execute code during various stages of the popover's lifecycle.
@@ -151,7 +145,6 @@ new Popover({
 | `placement` | `PlacementType` | `PlacementType.Top` | The placement of the popover. |
 | `showArrow` | `Boolean` | `true` | Whether to show arrow |
 | `emit` | `EmitType` | `EmitType.Click` | Trigger emit type |
-| `autoUpdate` | `boolean` | `true` | Whether to automatically update the position when the mount container, content, or trigger size changes. |
 | `open` | `boolean` |  | Whether to open the popover box by default |
 | `openDelay` | `number` | `100` | Open delay |
 | `closeDelay` | `number` | `100` | Close delay |
@@ -168,7 +161,6 @@ new Popover({
 | `onExited` | `() => void` | | Called when the CSS exit animation ends. |
 | `onOpen` | `() => void` | | Called when the popover is opened. |
 | `onClose` | `() => void` | |Called when the popover is closed. |
-| `onClickOutside` | `() => void` | | When the popover is closed. |
 
 ### Instance properties
 
