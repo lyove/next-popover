@@ -85,7 +85,7 @@ Popover will add the following 6 classes through the animationClass.
 `${animationClass}-exit-from` // Starts hiding and is removed in the next frame.
 `${animationClass}-exit-active` // Added in the next frame and removed when the animation ends.
 `${animationClass}-exit-to` // Added in the next frame and removed when the animation ends.
-`${animationClass}-${Placement}` // Current popover placement
+`${animationClass}-${placement}` // Current popover placement
 ```
 
 You can write CSS styles like this:
