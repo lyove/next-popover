@@ -4,46 +4,53 @@ import { $ } from "../src/utils";
 window.onload = function () {
   const mountElement = document.querySelector(".mount-container") as HTMLElement;
   const scrollBox = document.querySelector(".scroll-box") as HTMLElement;
-  const trigger = document.querySelector("#trigger") as HTMLElement;
-  const content = $({
-    tagName: "div",
-    attributes: { class: "content-inner" },
-    children: "Next-Popover",
-  });
-
   const mountedRect = mountElement.getBoundingClientRect();
   if (scrollBox) {
     scrollBox.scrollTop = (1000 - mountedRect.height) / 2 + 10;
     scrollBox.scrollLeft = (2000 - mountedRect.width) / 2 + 10;
   }
 
-  // default
-  const singleConfig = {
-    content,
-    trigger: trigger,
+  const openDelay = document.querySelector(".open-delay") as HTMLElement;
+  const closeDelay = document.querySelector(".close-delay") as HTMLElement;
+
+  /**
+   * single example
+   * ============================================================================================== //
+   */
+  const triggerItems = document.querySelectorAll(".popover_trigger") as NodeListOf<HTMLElement>;
+  const defaultConfig = {
+    content: "Next-Popover",
     appendTo: mountElement,
-    wrapperClass: "single-popover",
-    showArrow: true,
+    wrapperClass: "demo-popover",
+    animationClass: "fade",
     placement: PlacementType.Top,
     emit: EmitType.Click,
-    autoUpdate: true,
-    animationClass: "fade",
+    showArrow: true,
     openDelay: 50,
     closeDelay: 50,
   };
 
-  const singlePopover = new Popover({
-    ...singleConfig,
+  const popovers: any[] = [];
+
+  triggerItems.forEach((item) => {
+    const { placement } = item.dataset;
+
+    const content = $({
+      tagName: "div",
+      attributes: { class: "content-inner" },
+      children: placement,
+    });
+
+    const pop = new Popover({
+      ...defaultConfig,
+      content,
+      trigger: item,
+      placement: item.dataset.placement as any,
+    });
+    popovers.push(pop);
   });
 
-  // trigger.onclick = () => {
-  //   setTimeout(() => {
-  //     singlePopover.updateConfig({
-  //       ...singleConfig,
-  //       content: "new content",
-  //     });
-  //   }, 300);
-  // };
+  // ---------------------------------------------------------
 
   // configure
   const configure = document.querySelector(".configure") as HTMLElement;
@@ -51,74 +58,48 @@ window.onload = function () {
   // onChange
   configure.onchange = ({ target }) => {
     const { name, value, checked } = target as any;
-    if (name === "placement") {
-      singleConfig.placement = value;
-    } else if (name === "emit") {
-      if (value === "hover") {
-        trigger.innerHTML = "Hover Me";
-      } else if (value === "click") {
-        trigger.innerHTML = "Click Me";
-      }
-      singleConfig.emit = value;
+
+    if (name === "emit") {
+      defaultConfig.emit = value;
     } else if (name === "extra") {
-      if (value === "css") {
-        singleConfig.animationClass = checked ? "fade" : "";
+      if (value === "animation") {
+        defaultConfig.animationClass = checked ? "fade" : "";
       } else {
-        singleConfig[value] = checked;
+        defaultConfig[value] = checked;
       }
     } else if (name === "mount") {
-      singleConfig.appendTo = value === "triggerParent" ? mountElement : document.body;
+      defaultConfig.appendTo = value === "triggerParent" ? mountElement : document.body;
     }
 
-    singlePopover.updateConfig({
-      ...singleConfig,
+    popovers.forEach((pop) => {
+      pop.updateConfig({
+        ...pop.config,
+        ...defaultConfig,
+        placement: pop.config.placement,
+        content: pop.config.content,
+      });
     });
   };
-
-  const openDelay = document.querySelector(".open-delay") as HTMLElement;
-  const closeDelay = document.querySelector(".close-delay") as HTMLElement;
 
   // onInput
   configure.oninput = ({ target }) => {
     const { name, value } = target as any;
+
     if (name === "openDelay") {
       openDelay.textContent = `${value}ms`;
-      singleConfig.openDelay = Number(value);
+      defaultConfig.openDelay = Number(value);
     } else if (name === "closeDelay") {
       closeDelay.textContent = `${value}ms`;
-      singleConfig.closeDelay = Number(value);
+      defaultConfig.closeDelay = Number(value);
     }
 
-    singlePopover.updateConfig({
-      ...singleConfig,
+    popovers.forEach((pop) => {
+      pop.updateConfig({
+        ...pop.config,
+        ...defaultConfig,
+        placement: pop.config.placement,
+        content: pop.config.content,
+      });
     });
   };
-
-  /**
-   * multiple placement example
-   * ============================================================================================== //
-   */
-  const placementsItems = document.querySelectorAll(".popover_trigger") as NodeListOf<HTMLElement>;
-
-  const multiPopovers: any[] = [];
-
-  const multiConfig = {
-    content: "Next-Popover",
-    appendTo: document.body,
-    wrapperClass: "multi-popover",
-    animationClass: "fade",
-    placement: PlacementType.Top,
-    emit: EmitType.Hover,
-  };
-
-  placementsItems.forEach((item) => {
-    const { placement } = item.dataset;
-    const p = new Popover({
-      ...multiConfig,
-      content: `Position: ${placement}`,
-      trigger: item,
-      placement: item.dataset.placement as any,
-    });
-    multiPopovers.push(p);
-  });
 };
