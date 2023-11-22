@@ -106,12 +106,6 @@ Popover 会通过 `animationClass` 添加下面 6 个类。
 
 `closeOnScroll` 参数控制 `trigger` 元素滚动时，弹框自动关闭。
 
-<!-- `hideOnInvisible` 参数控制 `trigger` 元素在屏幕上看不见时，弹框自动隐藏。 -->
-
-### 自动更新
-
-`autoUpdate` 参数控制当容器，内容，trigger 大小发生改变时，自动更新弹框位置。依赖 [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) 。
-
 ### 钩子
 
 Popover 提供了丰富的钩子函数，可以在弹框的各个生命周期执行代码。
@@ -151,7 +145,6 @@ new Popover({
 | `placement` | `PlacementType` | `PlacementType.Top` | 弹框的位置 |
 | `showArrow` | `Boolean` | `true` | 是否显示箭头元素 |
 | `emit` | `EmitType` | `EmitType.Click`  | 触发弹出类型 |
-| `autoUpdate` | `boolean` | `true` | 容器，内容，触发元素大小变化自动更新位置 |
 | `defaultOpen` | `boolean` | | 是否默认打开弹框 |
 | `openDelay` | `number` | `100` | 打开延迟 |
 | `closeDelay` | `number` | `100` | 关闭延迟 |
@@ -168,7 +161,6 @@ new Popover({
 | `onExited` | `() => void` | | css 关闭动画完成 |
 | `onOpen` | `() => void` | | 当弹框展示 |
 | `onClose` | `() => void` | | 当弹框关闭 |
-| `onClickOutside` | `() => void` | | 当弹框关闭 |
 
 ### 实例属性
 
