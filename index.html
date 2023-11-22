@@ -42,55 +42,11 @@
     </div>
     <div class="main-content">
       <div class="configure">
-        <div class="placement">
-          <fieldset>
-            <legend>Placement</legend>
-            <label><input type="radio" name="placement" value="top-start" />TopStart</label>
-            <label><input type="radio" name="placement" value="top" checked />Top</label>
-            <label><input type="radio" name="placement" value="top-end" />TopEnd</label>
-            <label><input type="radio" name="placement" value="right-start" />RightStart</label>
-            <label><input type="radio" name="placement" value="right" />Right</label>
-            <label><input type="radio" name="placement" value="right-end" />RightEnd</label>
-            <label><input type="radio" name="placement" value="bottom-start" />BottomStart</label>
-            <label><input type="radio" name="placement" value="bottom" />Bottom</label>
-            <label><input type="radio" name="placement" value="bottom-end" />BottomEnd</label>
-            <label><input type="radio" name="placement" value="left-start" />LeftStart</label>
-            <label><input type="radio" name="placement" value="left" />Left</label>
-            <label><input type="radio" name="placement" value="left-end" />LeftEnd</label>
-          </fieldset>
-        </div>
         <div class="emit">
           <fieldset>
             <legend>Emit</legend>
             <label><input type="radio" name="emit" value="click" checked />click</label>
             <label><input type="radio" name="emit" value="hover" />hover</label>
-          </fieldset>
-        </div>
-        <div class="extra">
-          <fieldset>
-            <legend>Extra</legend>
-            <label><input type="checkbox" name="extra" value="showArrow" checked /> showArrow</label>
-            <label><input type="checkbox" name="extra" value="autoUpdate" checked /> autoUpdate</label>
-            <label><input type="checkbox" name="extra" value="css" checked /> css animation</label>
-            <label><input type="checkbox" name="extra" value="clickOutsideClose" checked /> clickOutsideClose</label>
-            <label><input type="checkbox" name="extra" value="enterable" checked /> enterable</label>
-            <label><input type="checkbox" name="extra" value="disabled" /> disabled</label>
-            <label><input type="checkbox" name="extra" value="closeOnScroll" /> closeOnScroll</label>
-            <!-- <label><input type="checkbox" name="extra" value="hideOnInvisible" /> hideOnInvisible</label> -->
-          </fieldset>
-        </div>
-        <div class="delay">
-          <fieldset>
-            <legend>Delay</legend>
-            <div class="flex">
-              <label style="flex: 1">
-                openDelay <input type="range" name="openDelay" min="0" max="3000" value="0" />
-                <span class="open-delay">0ms</span></label>
-              <label style="flex: 1">
-                closeDelay <input type="range" name="closeDelay" min="0" max="3000" value="50" />
-                <span class="close-delay">50ms</span>
-              </label>
-            </div>
           </fieldset>
         </div>
         <div class="mount">
@@ -100,61 +56,83 @@
             <label><input type="radio" name="mount" value="body" />Document.Body</label>
           </fieldset>
         </div>
+        <div class="delay">
+          <fieldset>
+            <legend>Delay</legend>
+            <div class="flex">
+              <label style="flex: 1">
+                openDelay <input type="range" name="openDelay" min="0" max="3000" value="50" />
+                <span class="open-delay">50ms</span></label>
+              <label style="flex: 1">
+                closeDelay <input type="range" name="closeDelay" min="0" max="3000" value="50" />
+                <span class="close-delay">50ms</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+        <div class="extra">
+          <fieldset>
+            <legend>Extra</legend>
+            <label><input type="checkbox" name="extra" value="showArrow" checked /> showArrow</label>
+            <label><input type="checkbox" name="extra" value="animation" checked /> css animation</label>
+            <label><input type="checkbox" name="extra" value="clickOutsideClose" checked /> clickOutsideClose</label>
+            <label><input type="checkbox" name="extra" value="enterable" checked /> enterable</label>
+            <label><input type="checkbox" name="extra" value="disabled" /> disabled</label>
+            <label><input type="checkbox" name="extra" value="closeOnScroll" /> closeOnScroll</label>
+          </fieldset>
+        </div>
       </div>
       <div class="mount-container">
         <div class="scroll-box">
-          <div class="trigger-outer">
-            <div id="trigger">Click Me!</div>
-          </div>
-        </div>
-      </div>
-      <div class="popover-base-box">
-        <div class="inbox">
-          <div class="row center">
-            <button type="button" data-placement="top-start" class="popover_trigger trigger-btn">
-              top-start
-            </button>
-            <button type="button" data-placement="top" class="popover_trigger trigger-btn ml-3 mr-3">
-              top
-            </button>
-            <button type="button" data-placement="top-end" class="popover_trigger trigger-btn">
-              top-end
-            </button>
-          </div>
-          <div class="row">
-            <button type="button" data-placement="left-start" class="popover_trigger trigger-btn">
-              left-start
-            </button>
-            <button type="button" data-placement="right-start" class="popover_trigger trigger-btn">
-              right-start
-            </button>
-          </div>
-          <div class="row">
-            <button type="button" data-placement="left" class="popover_trigger trigger-btn mt-3 mb-3">
-              left
-            </button>
-            <button type="button" data-placement="right" class="popover_trigger trigger-btn mt-3 mb-3">
-              right
-            </button>
-          </div>
-          <div class="row">
-            <button type="button" data-placement="left-end" class="popover_trigger trigger-btn">
-              left-end
-            </button>
-            <button type="button" data-placement="right-end" class="popover_trigger trigger-btn">
-              right-end
-            </button>
-          </div>
-          <div class="row center">
-            <button type="button" data-placement="bottom-start" class="popover_trigger trigger-btn">
-              bottom-start
-            </button>
-            <button type="button" data-placement="bottom" class="popover_trigger trigger-btn ml-3 mr-3">
-              bottom
-            </button>
-            <button type="button" data-placement="bottom-end" class="popover_trigger trigger-btn">
-              bottom-end
-            </button>
+          <div class="scroll-inner">
+            <div class="placements-box">
+              <div class="row center">
+                <button type="button" data-placement="top-start" class="popover_trigger trigger-btn">
+                  top-start
+                </button>
+                <button type="button" data-placement="top" class="popover_trigger trigger-btn ml-3 mr-3">
+                  top
+                </button>
+                <button type="button" data-placement="top-end" class="popover_trigger trigger-btn">
+                  top-end
+                </button>
+              </div>
+              <div class="row between">
+                <button type="button" data-placement="left-start" class="popover_trigger trigger-btn mt-3 mb-3">
+                  left-start
+                </button>
+                <button type="button" data-placement="right-start" class="popover_trigger trigger-btn mt-3 mb-3">
+                  right-start
+                </button>
+              </div>
+              <div class="row between">
+                <button type="button" data-placement="left" class="popover_trigger trigger-btn mt-3 mb-3">
+                  left
+                </button>
+                <button type="button" data-placement="right" class="popover_trigger trigger-btn mt-3 mb-3">
+                  right
+                </button>
+              </div>
+              <div class="row between">
+                <button type="button" data-placement="left-end" class="popover_trigger trigger-btn mt-3 mb-3">
+                  left-end
+                </button>
+                <button type="button" data-placement="right-end" class="popover_trigger trigger-btn mt-3 mb-3">
+                  right-end
+                </button>
+              </div>
+              <div class="row center">
+                <button type="button" data-placement="bottom-start" class="popover_trigger trigger-btn">
+                  bottom-start
+                </button>
+                <button type="button" data-placement="bottom" class="popover_trigger trigger-btn ml-3 mr-3">
+                  bottom
+                </button>
+                <button type="button" data-placement="bottom-end" class="popover_trigger trigger-btn">
+                  bottom-end
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
