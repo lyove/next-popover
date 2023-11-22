@@ -24,7 +24,6 @@ const DefaultConfig: Partial<PopoverConfig> = {
   placement: PlacementType.Top,
   showArrow: true,
   appendTo: document.body,
-  autoUpdate: true,
   emit: EmitType.Click,
   animationClass: "fade",
   clickOutsideClose: true,
@@ -89,15 +88,13 @@ export default class Popover {
    * Initialize
    */
   protected init() {
-    const { trigger, appendTo, autoUpdate, defaultOpen } = this.config;
+    const { trigger, appendTo, defaultOpen } = this.config;
 
     // create popover
     this.#createPopover();
 
-    // autoUpdate
-    if (autoUpdate) {
-      this.#observe();
-    }
+    // auto update
+    this.#observe();
 
     // add event
     this.#addTriggerEvent();
@@ -133,17 +130,18 @@ export default class Popover {
       onBeforeEnter,
       onOpen,
     } = this.config;
+
     if (config.disabled || this.opened || !this.closed || this.#isAnimating) {
       return;
     }
 
-    this.closed = false;
+    if (typeof onBeforeEnter === "function") {
+      onBeforeEnter();
+    }
 
-    // Remove existing popover when opening a new none
     this.cleanup();
 
-    this.#showPopover();
-
+    this.closed = false;
     this.#isAnimating = true;
 
     if (trigger instanceof HTMLElement) {
@@ -152,11 +150,10 @@ export default class Popover {
       }
     }
 
+    this.#showPopover();
+
     if (this.#animationClass) {
       const { enterFrom, enterActive, enterTo } = this.#animationClass;
-      if (typeof onBeforeEnter === "function") {
-        onBeforeEnter();
-      }
       this.popoverWrapper.classList.add(enterFrom);
       this.#showRaf = requestAnimationFrame(() => {
         this.popoverWrapper.classList.remove(enterFrom || "");
@@ -165,6 +162,8 @@ export default class Popover {
         this.#clearShow = transitionInfo.clear;
         transitionInfo.promise.then(this.#onShowTransitionEnd);
       });
+    } else {
+      this.#onShowTransitionEnd();
     }
 
     const computedPosition = getPosition({
@@ -220,18 +219,18 @@ export default class Popover {
    * Close the Popover instance.
    */
   close() {
+    const { trigger, triggerOpenClass, onBeforeExit, onClose, onExited } = this.config;
+
     if (this.closed || !this.opened || this.#isAnimating) {
       return;
     }
 
-    const { trigger, triggerOpenClass, onBeforeExit, onClose } = this.config;
-
-    this.opened = false;
-    this.#isAnimating = true;
-
     if (typeof onBeforeExit === "function") {
       onBeforeExit();
     }
+
+    this.opened = false;
+    this.#isAnimating = true;
 
     if (this.#animationClass) {
       const { exitFrom, exitActive, exitTo } = this.#animationClass;
@@ -244,18 +243,22 @@ export default class Popover {
         transitionInfo.promise.then(this.#onHideTransitionEnd);
       });
     } else {
-      this.#hidePopover();
-
       trigger.classList.remove(triggerOpenClass!);
 
+      this.#hidePopover();
       this.#removeScrollEvent();
       this.#removeDocClick();
       this.#removeMouseMove();
 
       this.closed = true;
+      this.#isAnimating = false;
 
       if (onClose) {
         onClose();
+      }
+
+      if (onExited) {
+        onExited();
       }
     }
   }
@@ -436,17 +439,6 @@ export default class Popover {
           this.#removePopRootEvent();
           this.#addPopRootEvent();
           this.#removeMouseMove();
-          break;
-
-        case "autoUpdate":
-          if (n) {
-            if (!this.#resizeObserver) {
-              this.#observe();
-            }
-          } else if (this.#resizeObserver) {
-            this.#resizeObserver.disconnect();
-            this.#resizeObserver = undefined;
-          }
           break;
 
         case "enterable":
@@ -766,9 +758,9 @@ export default class Popover {
   }
 
   #onDocClick = ({ target }: MouseEvent) => {
-    const { trigger, onClickOutside, clickOutsideClose } = this.config;
+    const { trigger, clickOutsideClose } = this.config;
 
-    if (onClickOutside || clickOutsideClose) {
+    if (clickOutsideClose) {
       if (
         this.popoverWrapper?.contains(target as HTMLElement) ||
         (trigger instanceof HTMLElement && trigger.contains(target as HTMLElement))
@@ -776,9 +768,6 @@ export default class Popover {
         return;
       }
 
-      if (onClickOutside) {
-        onClickOutside();
-      }
       if (clickOutsideClose) {
         this.closeWithDelay();
       }
