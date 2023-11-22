@@ -11,7 +11,6 @@ export interface PopoverConfig {
   showArrow?: boolean;
   appendTo?: HTMLElement;
   emit?: EmitType;
-  autoUpdate?: boolean;
   defaultOpen?: boolean;
   openDelay?: number;
   closeDelay?: number;
@@ -29,7 +28,6 @@ export interface PopoverConfig {
   onExited?: () => void;
   onOpen?: () => void;
   onClose?: () => void;
-  onClickOutside?: () => void;
 }
 
 export interface AnimationClass {
