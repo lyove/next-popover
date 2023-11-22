@@ -44,7 +44,6 @@ header span.title {
   -webkit-text-fill-color: transparent;
 }
 
-
 header .btn-row {
   display: flex;
   align-items: center;
@@ -119,103 +118,85 @@ header .btn-row .btn:active {
   overflow: hidden;
 }
 
+.configure,
+.mount-container {
+  width: 1200px;
+}
+
+/* Configure */
 .configure {
-  width: 900px;
   box-sizing: border-box;
   margin: 24px auto;
-  padding: 12px;
-  background: #fff;
-}
-
-.configure.translate .flex,
-.configure.delay .flex {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.configurelabel {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-.configure .placement label {
-  width: 110px;
-}
-
-.configure label input {
-  margin: 0 5px;
-}
-
-.scroll-box {
-  height: 100%;
-  overflow: auto;
-}
-
-.trigger-outer {
-  align-items: center;
-  display: flex;
-  height: 1000px;
-  justify-content: center;
-  width: 2000px;
-}
-
-/* trigger */
-#trigger {
-  align-items: center;
-  background: #3262fb;
-  border-radius: 6px;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  font-size: 30px;
-  height: 50px;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-  user-select: none;
-  width: 160px;
-}
-
-#trigger:hover {
-  background: #5183fc;
-}
-
-#trigger:active {
-  background: #2547cf;
-}
-
-/* popover-base-box */
-.popover-base-box {
-  width: 800px;
-  margin: 48px auto 24px;
-}
-
-.popover-base-box .inbox {
-  padding: 100px 160px 100px;
+  padding: 24px;
   border-radius: 6px;
   background: #fff;
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
     rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
 }
 
-.popover-base-box .row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.configure .emit,
+.configure .mount,
+.configure .delay,
+.configure .extra {
+  margin-bottom: 12px;
 }
 
-.popover-base-box .center {
+.configure label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 4px 12px;
+}
+
+.configure label input {
+  margin: 0 5px;
+}
+
+/* mount-container */
+.mount-container {
+  position: relative;
+  height: 600px;
+  margin: 24px auto;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  overflow: hidden;
+}
+
+/* Scroll box */
+.scroll-box {
+  height: 100%;
+  overflow: auto;
+}
+
+/* scroll inner */
+.scroll-inner {
+  height: 1000px;
+  width: 2000px;
+}
+
+/* placements box */
+.placements-box {
+  width: 900px;
+  margin: 350px auto;
+}
+
+/* Row */
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.row.center {
   justify-content: center;
 }
 
-.popover-base-box .box-item {
-  width: 110px;
-  margin-top: 10px;
+.row.between {
+  justify-content: space-between;
 }
 
+/* Trigger */
 .trigger-btn {
   display: inline-flex;
   justify-content: center;
@@ -227,48 +208,27 @@ header .btn-row .btn:active {
   text-align: center;
   box-sizing: border-box;
   outline: none;
-  transition: 0.1s;
+  border: none;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
   user-select: none;
   vertical-align: middle;
   -webkit-appearance: none;
-  border: 1px solid rgb(220, 223, 230);
   padding: 8px 10px;
   border-radius: 4px;
+  width: 140px;
+  height: 48px;
+  font-size: 20px;
+  background-color: #1890ff;
+  color: #fff;
 }
 
-/**
- * mount-container
- =====================================*/
-.mount-container {
-  position: relative;
-  width: 800px;
-  height: 500px;
-  margin: 24px auto;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
-  overflow: hidden;
+.trigger-btn:hover {
+  background: #40a9ff;
 }
 
-/**
- * Popover style
- */
-/* content */
-.single-popover .popover-content {
-  min-width: 100px;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popover-content {
-  min-width: 100px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.trigger-btn:active {
+  background: #096dd9;
 }
 
 /* common */
@@ -290,5 +250,17 @@ header .btn-row .btn:active {
 
 .center {
   text-align: center;
+}
+
+/**
+ * Popover style
+ */
+/* content */
+.popover-content {
+  min-width: 100px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
