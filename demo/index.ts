@@ -13,10 +13,6 @@ window.onload = function () {
   const openDelay = document.querySelector(".open-delay") as HTMLElement;
   const closeDelay = document.querySelector(".close-delay") as HTMLElement;
 
-  /**
-   * single example
-   * ============================================================================================== //
-   */
   const triggerItems = document.querySelectorAll(".popover_trigger") as NodeListOf<HTMLElement>;
   const defaultConfig = {
     content: "Next-Popover",
