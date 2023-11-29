@@ -178,7 +178,7 @@ header .btn-row .btn:active {
 
 /* placements box */
 .placements-box {
-  width: 900px;
+  width: 800px;
   margin: 350px auto;
 }
 
@@ -202,7 +202,6 @@ header .btn-row .btn:active {
   justify-content: center;
   align-items: center;
   line-height: 1;
-  height: 32px;
   white-space: nowrap;
   cursor: pointer;
   text-align: center;
@@ -214,10 +213,9 @@ header .btn-row .btn:active {
   user-select: none;
   vertical-align: middle;
   -webkit-appearance: none;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 4px;
-  width: 140px;
-  height: 48px;
+  width: 120px;
   font-size: 20px;
   background-color: #1890ff;
   color: #fff;
@@ -256,11 +254,14 @@ header .btn-row .btn:active {
  * Popover style
  */
 /* content */
-.popover-content {
-  min-width: 100px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.popover-wrapper .popover-content {
+  padding: 12px
 }
-
+.popover-wrapper.placement-right .popover-content,
+.popover-wrapper.placement-right-start .popover-content,
+.popover-wrapper.placement-right-end .popover-content,
+.popover-wrapper.placement-left .popover-content,
+.popover-wrapper.placement-left-start .popover-content,
+.popover-wrapper.placement-left-end .popover-content {
+  padding: 24px 12px
+}
