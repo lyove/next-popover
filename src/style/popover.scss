@@ -34,49 +34,102 @@
   }
 
   & .popover-content {
-    padding: 0.5rem;
+    padding: 8px 12px;
   }
 }
 
 // placement arrow
 .popover-wrapper {
+  // top
   &.placement-top,
   &.placement-top-start,
   &.placement-top-end {
     & > .popover-arrow {
-      margin-left: -$arrowHalfSize;
-      left: 0;
-      top: -#{$arrowHalfSize + 1px};
+      bottom: -$arrowHalfSize;
     }
   }
-
+  &.placement-top {
+    & > .popover-arrow {
+      left: calc(50% - $arrowHalfSize);
+    }
+  }
+  &.placement-top-start {
+    & > .popover-arrow {
+      left: #{$arrowHalfSize + 8px};
+    }
+  }
+  &.placement-top-end {
+    & > .popover-arrow {
+      right: #{$arrowHalfSize + 8px};
+    }
+  }
+  // right
   &.placement-right,
   &.placement-right-start,
   &.placement-right-end {
     & > .popover-arrow {
-      margin-top: -$arrowHalfSize;
-      top: 0;
       left: -#{$arrowHalfSize - 1px};
     }
   }
-
+  &.placement-right {
+    & > .popover-arrow {
+      top: calc(50% - $arrowHalfSize);
+    }
+  }
+  &.placement-right-start {
+    & > .popover-arrow {
+      top: #{$arrowHalfSize + 4px};
+    }
+  }
+  &.placement-right-end {
+    & > .popover-arrow {
+      bottom: #{$arrowHalfSize + 4px};
+    }
+  }
+  // bottom
   &.placement-bottom,
   &.placement-bottom-start,
   &.placement-bottom-end {
     & > .popover-arrow {
-      margin-left: -$arrowHalfSize;
-      left: 0;
       top: -#{$arrowHalfSize - 1px};
     }
   }
-
+  &.placement-bottom {
+    & > .popover-arrow {
+      left: calc(50% - $arrowHalfSize);
+    }
+  }
+  &.placement-bottom-start {
+    & > .popover-arrow {
+      left: #{$arrowHalfSize + 8px};
+    }
+  }
+  &.placement-bottom-end {
+    & > .popover-arrow {
+      right: #{$arrowHalfSize + 8px};
+    }
+  }
+  // left
   &.placement-left,
   &.placement-left-start,
   &.placement-left-end {
     & > .popover-arrow {
-      margin-top: -$arrowHalfSize;
-      top: 0;
-      left: -#{$arrowHalfSize + 1px};
+      right: -#{$arrowHalfSize - 1px};
+    }
+  }
+  &.placement-left {
+    & > .popover-arrow {
+      top: calc(50% - $arrowHalfSize);
+    }
+  }
+  &.placement-left-start {
+    & > .popover-arrow {
+      top: #{$arrowHalfSize + 4px};
+    }
+  }
+  &.placement-left-end {
+    & > .popover-arrow {
+      bottom: #{$arrowHalfSize + 4px};
     }
   }
 }
@@ -90,5 +143,5 @@
 
 .fade-enter-active,
 .fade-exit-active {
-  transition: transform 0.2s cubic-bezier(0.34, 0.69, 0.1, 1), opacity 0.2s ease;
+  transition: transform 0.1s cubic-bezier(0.34, 0.69, 0.1, 1), opacity 0.1s ease;
 }
