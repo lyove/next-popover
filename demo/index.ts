@@ -34,7 +34,7 @@ window.onload = function () {
     const content = $({
       tagName: "div",
       attributes: { class: "content-inner" },
-      children: placement,
+      children: `Next-Popover<br /> Positon: ${placement}`,
     });
 
     const pop = new Popover({
