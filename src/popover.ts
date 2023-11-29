@@ -1,19 +1,20 @@
 import type { RequireOneKey, PopoverConfig, AnimationClass } from "./type";
-import getPosition from "./getPosition";
 import {
   $,
-  $showElementByOpacity,
   $setStyle,
   $getStyleProperties,
+  $getScrollElements,
   $getAbsoluteCoords,
   $getCursorCoords,
+  $getElementBoundary,
+  $getMoreVisibleSides,
   debounce,
   throttle,
 } from "./utils";
 import { EmitType, PlacementType } from "./constant";
 import "./style/index.scss";
 
-// class name
+// popover classnames
 const NextPopoverId = "next-popover";
 const WrapperClassName = "popover-wrapper";
 const ContentClassName = "popover-content";
@@ -105,7 +106,7 @@ export default class Popover {
 
     // listen scroll
     if (this.#needListenScroll()) {
-      this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, appendTo);
+      this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
     }
 
     // default open
@@ -123,7 +124,6 @@ export default class Popover {
       trigger,
       triggerOpenClass,
       animationClass,
-      showArrow,
       appendTo,
       placement,
       margin,
@@ -151,6 +151,7 @@ export default class Popover {
     }
 
     this.#showPopover();
+    this.popoverWrapper.classList.add(`placement-${placement}`);
 
     if (this.#animationClass) {
       const { enterFrom, enterActive, enterTo } = this.#animationClass;
@@ -166,22 +167,15 @@ export default class Popover {
       this.#onShowTransitionEnd();
     }
 
-    const computedPosition = getPosition({
+    const computedPosition = this.#getPopoverPosition({
       triggerElement: trigger,
       popoverElement: this.popoverRoot,
-      arrowElement: this.arrowElement,
       appendToElement: appendTo,
       placement: placement ? placement : PlacementType.Top,
       margin: margin,
     });
 
-    const {
-      placement: position,
-      left: x,
-      top: y,
-      arrowLeft: arrowX,
-      arrowTop: arrowY,
-    } = computedPosition;
+    const { placement: position, left: x, top: y } = computedPosition;
 
     this.popoverWrapper.classList.remove(`placement-${this.#prevPlacement}`);
     this.popoverWrapper.classList.add(`placement-${position}`);
@@ -195,12 +189,11 @@ export default class Popover {
 
     this.#prevPlacement = position;
 
-    $setStyle(this.popoverRoot, { transform: `translate3d(${x}px,${y}px,0)` });
-    $showElementByOpacity(this.popoverRoot);
-
-    if (showArrow && this.arrowElement) {
-      $setStyle(this.arrowElement, { transform: `translate(${arrowX}px,${arrowY}px)` });
-    }
+    $setStyle(this.popoverRoot, {
+      transform: `translate3d(${x}px,${y}px,0)`,
+      opacity: "1",
+      pointerEvents: "auto",
+    });
 
     document.addEventListener("click", this.#onDocClick);
     document.addEventListener("mousemove", this.#onMouseMove);
@@ -298,22 +291,15 @@ export default class Popover {
    */
   update() {
     if (this.opened && !this.#isAnimating) {
-      const { trigger, animationClass, showArrow, appendTo, placement, margin } = this.config;
-      const computedPosition = getPosition({
+      const { trigger, animationClass, appendTo, placement, margin } = this.config;
+      const computedPosition = this.#getPopoverPosition({
         triggerElement: trigger,
         popoverElement: this.popoverRoot,
-        arrowElement: this.arrowElement,
         appendToElement: appendTo,
         placement: placement ? placement : PlacementType.Top,
         margin: margin,
       });
-      const {
-        placement: position,
-        left: x,
-        top: y,
-        arrowLeft: arrowX,
-        arrowTop: arrowY,
-      } = computedPosition;
+      const { placement: position, left: x, top: y } = computedPosition;
 
       this.popoverWrapper.classList.remove(`placement-${this.#prevPlacement}`);
       this.popoverWrapper.classList.add(`placement-${position}`);
@@ -327,12 +313,11 @@ export default class Popover {
 
       this.#prevPlacement = position;
 
-      $setStyle(this.popoverRoot, { transform: `translate3d(${x}px,${y}px,0)` });
-      $showElementByOpacity(this.popoverRoot);
-
-      if (showArrow && this.arrowElement) {
-        $setStyle(this.arrowElement, { transform: `translate(${arrowX}px,${arrowY}px)` });
-      }
+      $setStyle(this.popoverRoot, {
+        transform: `translate3d(${x}px,${y}px,0)`,
+        opacity: "1",
+        pointerEvents: "auto",
+      });
     }
   }
 
@@ -387,7 +372,7 @@ export default class Popover {
             const need = this.#needListenScroll();
             if (need) {
               if (!this.#scrollElements) {
-                this.#scrollElements = this.#getScrollElements(trigger, appendTo);
+                this.#scrollElements = $getScrollElements(trigger, appendTo);
               }
             } else if (this.#scrollElements) {
               this.#removeScrollEvent();
@@ -454,7 +439,7 @@ export default class Popover {
             const need = this.#needListenScroll();
             if (need) {
               if (!this.#scrollElements) {
-                this.#scrollElements = this.#getScrollElements(trigger as HTMLElement, appendTo);
+                this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
                 if (this.opened) {
                   this.#scrollElements?.forEach((e) => {
                     e.addEventListener("scroll", this.#onScroll, { passive: true });
@@ -562,6 +547,10 @@ export default class Popover {
     });
   }
 
+  /**
+   * Popover class private field
+   */
+
   #getConfig(config: PopoverConfig) {
     return {
       ...DefaultConfig,
@@ -635,6 +624,228 @@ export default class Popover {
     $setStyle(this.popoverRoot, { transform: "" });
   }
 
+  #getPopoverPosition({
+    // Trigger element
+    triggerElement,
+    // Popover element
+    popoverElement,
+    // mount container for popover
+    appendToElement = document.body,
+    // Placement of popover(top, bottom, left, right, auto), default auto
+    placement = "auto",
+    // Space between popover and its trigger (in pixel), default 0
+    margin = 0,
+  }: {
+    triggerElement: HTMLElement;
+    popoverElement: HTMLElement;
+    appendToElement?: HTMLElement;
+    placement: PlacementType | "auto";
+    margin?: number;
+  }) {
+    // init
+    if (!triggerElement || !popoverElement) {
+      throw new Error("Couldn't initiate");
+    }
+
+    // reset popover style
+    $setStyle(popoverElement, {
+      transform: "",
+    });
+
+    // trigger Rect
+    const triggerElementCoords = $getAbsoluteCoords(triggerElement);
+    const triggerElementWidth = triggerElementCoords.width;
+    const triggerElementHeight = triggerElementCoords.height;
+    const triggerElementTop = triggerElementCoords.top;
+    const triggerElementRight = triggerElementCoords.right;
+    const triggerElementBottom = triggerElementCoords.bottom;
+    const triggerElementLeft = triggerElementCoords.left;
+
+    // popover Rect
+    const popoverElementCoords = $getAbsoluteCoords(popoverElement);
+    const popoverElementWidth = popoverElementCoords.width;
+    const popoverElementHeight = popoverElementCoords.height;
+    const popoverElementTop = popoverElementCoords.top;
+    const popoverElementRight = popoverElementCoords.right;
+    const popoverElementBotttom = popoverElementCoords.bottom;
+    const popoverElementLeft = popoverElementCoords.left;
+
+    // appendToElement Rect
+    const appendToElementCoords = $getAbsoluteCoords(appendToElement);
+    const appendToElementWidth = appendToElementCoords.width;
+    const appendToElementHeight = appendToElementCoords.height;
+    const appendToElementTop = appendToElementCoords.top;
+    const appendToElementLeft = appendToElementCoords.left;
+
+    /** find the placement which has more space */
+    if (placement === "auto") {
+      const moreVisibleSides = $getMoreVisibleSides(triggerElement);
+      placement = moreVisibleSides.vertical as PlacementType;
+    }
+
+    // placements splitting
+    const mainPlacement: string = placement.split("-")[0];
+    const secondaryPlacement = placement.split("-")[1];
+
+    // placements value
+    const placementsValue: {
+      [key: string]: {
+        top: number;
+        left: number;
+      };
+    } = {
+      // top-left
+      "top-start": {
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        left: triggerElementLeft - popoverElementLeft,
+      },
+      top: {
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        left:
+          triggerElementLeft +
+          triggerElementWidth / 2 -
+          (popoverElementLeft + popoverElementWidth / 2),
+      },
+      // top-right
+      "top-end": {
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        left: triggerElementLeft + triggerElementWidth - (popoverElementLeft + popoverElementWidth),
+      },
+      // bottom-left
+      "bottom-start": {
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        left: triggerElementLeft - popoverElementLeft,
+      },
+      bottom: {
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        left:
+          triggerElementLeft +
+          triggerElementWidth / 2 -
+          (popoverElementLeft + popoverElementWidth / 2),
+      },
+      // bottom-right
+      "bottom-end": {
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        left: triggerElementLeft + triggerElementWidth - (popoverElementLeft + popoverElementWidth),
+      },
+      // right-top
+      "right-start": {
+        top: triggerElementTop - popoverElementTop,
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+      },
+      right: {
+        top:
+          triggerElementTop +
+          triggerElementHeight / 2 -
+          (popoverElementTop + popoverElementHeight / 2),
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+      },
+      // right-bottom
+      "right-end": {
+        top: triggerElementTop + triggerElementHeight - (popoverElementTop + popoverElementHeight),
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+      },
+      // left-top
+      "left-start": {
+        top: triggerElementTop - popoverElementTop,
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+      },
+      left: {
+        top:
+          triggerElementTop +
+          triggerElementHeight / 2 -
+          (popoverElementTop + popoverElementHeight / 2),
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+      },
+      // left-bottom
+      "left-end": {
+        top: triggerElementTop + triggerElementHeight - (popoverElementTop + popoverElementHeight),
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+      },
+    };
+
+    // calculated left top style value
+    let top = placementsValue[placement].top;
+    let left = placementsValue[placement].left;
+
+    // edge
+    let topEdge = window.scrollY - popoverElementTop;
+    let bottomEdge = window.innerHeight + topEdge;
+    let leftEdge = window.scrollX - popoverElementLeft;
+    let rightEdge = window.innerWidth + leftEdge;
+    if (appendToElement !== document.body && appendToElement.contains(triggerElement)) {
+      topEdge = appendToElementTop - popoverElementTop;
+      bottomEdge = appendToElementHeight + topEdge;
+      leftEdge = appendToElementLeft - popoverElementLeft;
+      rightEdge = appendToElementWidth + leftEdge;
+    }
+
+    // inverse placement
+    let inversePlacement;
+
+    /* if popoverElement is hiding on left edge */
+    if (left < leftEdge) {
+      if (mainPlacement === "left") {
+        inversePlacement = `right${secondaryPlacement ? `-${secondaryPlacement}` : ""}`;
+      } else if (leftEdge + popoverElementLeft > triggerElementRight) {
+        /** if triggerElement is hiding on left edge */
+        left = triggerElementRight - popoverElementLeft;
+      } else {
+        left = leftEdge;
+      }
+    } else if (left + popoverElementWidth > rightEdge) {
+      /* if popoverElement is hiding on right edge */
+      if (mainPlacement === "right") {
+        inversePlacement = `left${secondaryPlacement ? `-${secondaryPlacement}` : ""}`;
+      } else if (rightEdge + popoverElementLeft < triggerElementLeft) {
+        /** if triggerElement is hiding on right edge */
+        left = triggerElementLeft - popoverElementRight;
+      } else {
+        left = rightEdge - popoverElementWidth;
+      }
+    }
+
+    /* if popoverElement is hiding on top edge */
+    if (top < topEdge) {
+      if (mainPlacement === "top") {
+        inversePlacement = `bottom${secondaryPlacement ? `-${secondaryPlacement}` : ""}`;
+      } else if (topEdge + popoverElementTop > triggerElementBottom) {
+        /** if triggerElement is hiding on top edge */
+        top = triggerElementBottom - popoverElementTop;
+      } else {
+        top = topEdge;
+      }
+    } else if (top + popoverElementHeight > bottomEdge) {
+      /* if popoverElement is hiding on bottom edge */
+      if (mainPlacement === "bottom") {
+        inversePlacement = `top${secondaryPlacement ? `-${secondaryPlacement}` : ""}`;
+      } else if (bottomEdge + popoverElementTop < triggerElementTop) {
+        /** if triggerElement is hiding on bottom edge */
+        top = triggerElementTop - popoverElementBotttom;
+      } else {
+        top = bottomEdge - popoverElementHeight;
+      }
+    }
+
+    /** if popover element is hidden in the given position, show it on opposite position */
+    if (inversePlacement) {
+      const inversePlacementValue = placementsValue[inversePlacement];
+      placement = inversePlacement as PlacementType;
+
+      if (mainPlacement === "top" || mainPlacement === "bottom") {
+        top = inversePlacementValue.top;
+      } else if (mainPlacement === "left" || mainPlacement === "right") {
+        left = inversePlacementValue.left;
+      }
+    }
+
+    return {
+      left,
+      top,
+      placement,
+    };
+  }
+
   #setAnimationClass() {
     const { animationClass } = this.config;
     this.#animationClass = animationClass
@@ -666,12 +877,12 @@ export default class Popover {
 
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
-      const interactiveBoundary = this.#getPopInteractiveBoundary({
+      const interactiveBoundary = this.#getPopoverEnterableBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
         margin: margin || 0,
       });
-      const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
+      const isHoverOver = this.#isCursorInsideEnterableBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
         return;
       }
@@ -718,12 +929,12 @@ export default class Popover {
 
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
-      const interactiveBoundary = this.#getPopInteractiveBoundary({
+      const interactiveBoundary = this.#getPopoverEnterableBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
         margin: margin || 0,
       });
-      const isHoverOver = this.#isCursorInsideInteractiveBoundary(cursorXY, interactiveBoundary);
+      const isHoverOver = this.#isCursorInsideEnterableBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
         return;
       }
@@ -751,7 +962,7 @@ export default class Popover {
     } else {
       this.update();
     }
-  });
+  }, 300);
 
   #removeScrollEvent() {
     this.#scrollElements?.forEach((e) => e.removeEventListener("scroll", this.#onScroll));
@@ -782,15 +993,15 @@ export default class Popover {
     const { emit, enterable, trigger, margin } = this.config;
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
-      const triggerBoundary = this.#getTrigInteractiveBoundary(trigger);
-      const isHoverTrig = this.#isCursorInsideInteractiveBoundary(cursorXY, triggerBoundary);
+      const triggerBoundary = $getElementBoundary(trigger);
+      const isHoverTrig = this.#isCursorInsideEnterableBoundary(cursorXY, triggerBoundary);
       if (!isHoverTrig) {
-        const popoverBoundary = this.#getPopInteractiveBoundary({
+        const popoverBoundary = this.#getPopoverEnterableBoundary({
           popElement: this.popoverRoot,
           placement: this.#prevPlacement as PlacementType,
           margin: margin || 0,
         });
-        const isHoverPop = this.#isCursorInsideInteractiveBoundary(cursorXY, popoverBoundary);
+        const isHoverPop = this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary);
         if (!isHoverPop) {
           this.closeWithDelay();
         }
@@ -801,6 +1012,16 @@ export default class Popover {
   #removeMouseMove = () => {
     document.removeEventListener("mousemove", this.#onMouseMove);
   };
+
+  #observe() {
+    const { trigger, appendTo } = this.config;
+    const robs = (this.#resizeObserver = new ResizeObserver(() => this.update()));
+    robs.observe(this.popoverWrapper);
+    robs.observe(appendTo);
+    if (trigger instanceof HTMLElement) {
+      robs.observe(trigger);
+    }
+  }
 
   #getTransitionInfo(element: HTMLElement) {
     const transitionDelays = $getStyleProperties(element, "transitionDelay");
@@ -896,37 +1117,7 @@ export default class Popover {
     return trigger instanceof HTMLElement && appendTo;
   }
 
-  #getScrollElements(element: HTMLElement, appendTo: HTMLElement) {
-    const scrollElements: HTMLElement[] = [];
-    const isScrollElement = (el: HTMLElement) => {
-      return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth;
-    };
-    while (element instanceof HTMLElement && element !== appendTo) {
-      if (isScrollElement(element)) {
-        scrollElements.push(element);
-      }
-      if (element.parentElement instanceof HTMLElement) {
-        element = element.parentElement;
-      }
-    }
-    return scrollElements;
-  }
-
-  #getTrigInteractiveBoundary = (trigElement: HTMLElement) => {
-    const trigElementCoords = $getAbsoluteCoords(trigElement);
-    const left = trigElementCoords.left;
-    const top = trigElementCoords.top;
-    const bottom = trigElementCoords.bottom;
-    const right = trigElementCoords.right;
-    return {
-      left: Math.trunc(left),
-      top: Math.trunc(top),
-      bottom: Math.trunc(bottom),
-      right: Math.trunc(right),
-    };
-  };
-
-  #getPopInteractiveBoundary = ({
+  #getPopoverEnterableBoundary = ({
     popElement,
     placement,
     margin = 0,
@@ -977,9 +1168,9 @@ export default class Popover {
     };
   };
 
-  #isCursorInsideInteractiveBoundary = (
+  #isCursorInsideEnterableBoundary = (
     cursorXY: { x: number; y: number },
-    interactiveBoundary: {
+    enterableBoundary: {
       top: number;
       right: number;
       bottom: number;
@@ -987,20 +1178,10 @@ export default class Popover {
     },
   ) => {
     const { x, y } = cursorXY;
-    const { left, top, right, bottom } = interactiveBoundary;
+    const { left, top, right, bottom } = enterableBoundary;
 
     return x >= left && x <= right && y >= top && y <= bottom;
   };
-
-  #observe() {
-    const { trigger, appendTo } = this.config;
-    const robs = (this.#resizeObserver = new ResizeObserver(() => this.update()));
-    robs.observe(this.popoverWrapper);
-    robs.observe(appendTo);
-    if (trigger instanceof HTMLElement) {
-      robs.observe(trigger);
-    }
-  }
 
   #clearTimers = () => {
     clearTimeout(this.#openTimer);
