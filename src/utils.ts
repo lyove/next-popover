@@ -32,10 +32,10 @@ export function $<T extends HTMLElement>({
 
   // set children
   if (children) {
-    if (typeof children === "string") {
-      element.innerHTML = children;
-    } else {
+    if (Array.isArray(children)) {
       children.forEach((c) => element.appendChild(c));
+    } else {
+      element.innerHTML = children.toString();
     }
   }
   // set style
@@ -58,26 +58,6 @@ export function $clearChildren($element: Element) {
       $element.removeChild($element.lastChild);
     }
   }
-}
-
-/**
- * Show element
- * @param element HTMLElement
- */
-export function $showElementByOpacity(element: HTMLElement) {
-  const { style } = element;
-  style.opacity = "1";
-  style.pointerEvents = "auto";
-}
-
-/**
- * Hide element
- * @param element HTMLElement
- */
-export function $hideElementByOpacity(element: HTMLElement) {
-  const { style } = element;
-  style.opacity = "0";
-  style.pointerEvents = "none";
 }
 
 /**
@@ -123,6 +103,28 @@ export function $setData($element: HTMLElement, data: { [key: string]: any }) {
 export function $getStyleProperties($element: HTMLElement, key: string) {
   const styles = window.getComputedStyle($element);
   return (styles as any)[key]?.split(", ");
+}
+
+/*
+ * get scroll elements
+ * @param $element HTMLElement
+ * @param $appendTo HTMLElement
+ * @returns HTMLElement
+ */
+export function $getScrollElements($element: HTMLElement, $appendTo: HTMLElement) {
+  const scrollElements: HTMLElement[] = [];
+  const isScrollElement = (el: HTMLElement) => {
+    return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth;
+  };
+  while ($element instanceof HTMLElement && $element !== $appendTo) {
+    if (isScrollElement($element)) {
+      scrollElements.push($element);
+    }
+    if ($element.parentElement instanceof HTMLElement) {
+      $element = $element.parentElement;
+    }
+  }
+  return scrollElements;
 }
 
 /**
@@ -172,6 +174,53 @@ export function $getCursorCoords(event: MouseEvent) {
 }
 
 /**
+ * get element boundary
+ * @param $element HTMLElement
+ * @returns object
+ */
+export function $getElementBoundary($element: HTMLElement) {
+  const elementCoords = $getAbsoluteCoords($element);
+  const left = elementCoords.left;
+  const top = elementCoords.top;
+  const bottom = elementCoords.bottom;
+  const right = elementCoords.right;
+  return {
+    left: Math.trunc(left),
+    top: Math.trunc(top),
+    bottom: Math.trunc(bottom),
+    right: Math.trunc(right),
+  };
+}
+
+/**
+ * getm more visible sides
+ * @param $element HTMLElement
+ * @returns object
+ */
+export function $getMoreVisibleSides($element: HTMLElement) {
+  if (!$element) {
+    return {};
+  }
+
+  const boxRect = $element.getBoundingClientRect();
+  const availableWidth = window.innerWidth;
+  const availableHeight = window.innerHeight;
+
+  const leftArea = boxRect.left;
+  const topArea = boxRect.top;
+  const rightArea = availableWidth - leftArea - boxRect.width;
+  const bottomArea = availableHeight - topArea - boxRect.height;
+
+  const horizontal = leftArea > rightArea ? "left" : "right";
+  const vertical = topArea > bottomArea ? "top" : "bottom";
+
+  return {
+    horizontal,
+    vertical,
+  };
+}
+
+/**
  * Function Utils
  */
 
@@ -200,7 +249,7 @@ export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean)
 /**
  * Throttle
  * @param {function} fn
- * @param {number} delay
+ * @param {any} ctx
  */
 export function throttle(fn: () => void, ctx?: any): any {
   let pending = false;
