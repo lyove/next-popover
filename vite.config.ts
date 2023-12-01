@@ -1,8 +1,8 @@
 import * as path from "path";
 import { defineConfig } from "vite";
 import banner from "vite-plugin-banner";
+import injectStyle from "vite-plugin-css-injected-by-js";
 import packageJson from "./package.json";
-import styleInject from "./plugins/style-inject";
 
 const packageName = packageJson.name;
 const outputName = "popover";
