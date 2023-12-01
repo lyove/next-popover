@@ -12,7 +12,13 @@ Next-Popover is a lightweight and simple popover, tooltip, dropdown library, wit
 
 ```
 npm i next-popover
+```
+or
+```
 yarn add next-popover
+```
+or
+```
 pnpm add next-popover
 ```
 

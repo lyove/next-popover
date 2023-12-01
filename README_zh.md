@@ -12,7 +12,13 @@ Next-Popover 是一个轻量级、简单的弹出框工具库，可用于Poopver
 
 ```
 npm i next-popover
+```
+或
+```
 yarn add next-popover
+```
+或
+```
 pnpm add next-popover
 ```
 
