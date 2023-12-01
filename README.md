@@ -12,12 +12,13 @@ Next-Popover is a lightweight and simple popover, tooltip, dropdown library, wit
 
 ```
 npm i next-popover
+yarn add next-popover
+pnpm add next-popover
 ```
 
 or via CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/next-popover@latest/dist/style.css">
 <script src="https://unpkg.com/next-popover@latest/dist/popover.umd.js"></script>
 <script>
   const { NextPopover } = window;

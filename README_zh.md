@@ -12,12 +12,13 @@ Next-Popover 是一个轻量级、简单的弹出框工具库，可用于Poopver
 
 ```
 npm i next-popover
+yarn add next-popover
+pnpm add next-popover
 ```
 
 或者通过 CDN 使用
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/next-popover@latest/dist/style.css">
 <script src="https://unpkg.com/next-popover@latest/dist/popover.umd.js"></script>
 <script>
   const { NextPopover } = window;
