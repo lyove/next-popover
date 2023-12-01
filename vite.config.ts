@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
       },
       copyPublicDir: false,
     },
-    plugins: [banner(pkgInfo), styleInject()],
+    plugins: [banner(pkgInfo), injectStyle({ styleId: "next-popover" })],
     resolve: {
       alias: {
         "@/*": path.resolve(__dirname, "src"),
