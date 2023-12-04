@@ -18,7 +18,7 @@
     "noImplicitThis": false,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client", "node", "jest"]
+    "types": ["vite/client"]
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "node_modules", "test/**"]
