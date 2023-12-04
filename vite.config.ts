@@ -1,7 +1,7 @@
 import * as path from "path";
 import { defineConfig } from "vite";
 import banner from "vite-plugin-banner";
-import injectStyle from "vite-plugin-css-injected-by-js";
+import styleInject from "./plugins/style-inject";
 import packageJson from "./package.json";
 
 const packageName = packageJson.name;
@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
       },
       copyPublicDir: false,
     },
-    plugins: [banner(pkgInfo), injectStyle({ styleId: "next-popover" })],
+    plugins: [banner(pkgInfo), styleInject({ styleId: "next-popover-style" })],
     resolve: {
       alias: {
         "@/*": path.resolve(__dirname, "src"),

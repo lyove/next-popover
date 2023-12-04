@@ -3,6 +3,11 @@ import { $ } from "../src/utils";
 
 window.onload = function () {
   const mountElement = document.querySelector(".mount-container") as HTMLElement;
+  const openDelay = document.querySelector(".open-delay") as HTMLElement;
+  const closeDelay = document.querySelector(".close-delay") as HTMLElement;
+  const triggerItems = document.querySelectorAll(".popover_trigger") as NodeListOf<HTMLElement>;
+
+  // box scroll top & left
   const scrollBox = document.querySelector(".scroll-box") as HTMLElement;
   const mountedRect = mountElement.getBoundingClientRect();
   if (scrollBox) {
@@ -10,10 +15,7 @@ window.onload = function () {
     scrollBox.scrollLeft = (2000 - mountedRect.width) / 2 + 10;
   }
 
-  const openDelay = document.querySelector(".open-delay") as HTMLElement;
-  const closeDelay = document.querySelector(".close-delay") as HTMLElement;
-
-  const triggerItems = document.querySelectorAll(".popover_trigger") as NodeListOf<HTMLElement>;
+  // default config
   const defaultConfig = {
     content: "Next-Popover",
     appendTo: mountElement,
@@ -26,8 +28,8 @@ window.onload = function () {
     closeDelay: 50,
   };
 
+  // init
   const popovers: any[] = [];
-
   triggerItems.forEach((item) => {
     const { placement } = item.dataset;
 
@@ -46,9 +48,9 @@ window.onload = function () {
     popovers.push(pop);
   });
 
-  // ---------------------------------------------------------
-
-  // configure
+  /**
+   * Configure
+   */
   const configure = document.querySelector(".configure") as HTMLElement;
 
   // onChange
