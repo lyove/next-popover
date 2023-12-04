@@ -1,5 +1,12 @@
 # next-popover
 
+<a href="https://github.com/lyove/next-popover/stargazers"><img src="https://img.shields.io/github/stars/lyove/next-popover" alt="Stars Badge"/></a>
+<a href="https://github.com/lyove/next-popover/network/members"><img src="https://img.shields.io/github/forks/lyove/next-popover" alt="Forks Badge"/></a>
+<a href="https://github.com/lyove/next-popover/pulls"><img src="https://img.shields.io/github/issues-pr/lyove/next-popover" alt="Pull Requests Badge"/></a>
+<a href="https://github.com/lyove/next-popover/issues"><img src="https://img.shields.io/github/issues/lyove/next-popover" alt="Issues Badge"/></a>
+<a href="https://github.com/lyove/next-popover/graphs/contributors"><img src="https://img.shields.io/github/contributors/lyove/next-popover?color=2b9348" alt="GitHub contributors"></a>
+<a href="https://github.com/lyove/next-popover/blob/master/LICENSE"><img src="https://img.shields.io/github/license/lyove/next-popover?color=2b9348" alt="License Badge"/></a>
+
 ![Header Image](public/Popover.png)
 
 Next-Popover is a lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.
