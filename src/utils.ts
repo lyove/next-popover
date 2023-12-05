@@ -3,17 +3,20 @@
  * @param param
  * @returns HTMLElement
  */
-export function $<T extends HTMLElement>({
-  tagName,
-  attributes,
-  children,
-  style,
-}: {
+interface ParamsObject {
   tagName?: string;
   attributes?: { [key: string]: unknown };
   children?: string | Array<Node>;
   style?: Partial<CSSStyleDeclaration>;
-}): T {
+}
+type ParamsType = string | ParamsObject;
+
+export function $<T extends HTMLElement>(params: ParamsType): T {
+  if (typeof params === "string") {
+    return document.createElement(params) as T;
+  }
+
+  const { tagName, attributes, children, style } = params;
   const element = document.createElement(tagName || "div");
 
   // attributes of Boolean type
