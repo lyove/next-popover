@@ -7,7 +7,7 @@ export type RequireOneKey<T, K extends keyof T> = {
 export interface PopoverConfig {
   trigger: HTMLElement;
   content: HTMLElement | string | number;
-  placement?: PlacementType;
+  placement?: `${PlacementType}`;
   showArrow?: boolean;
   appendTo?: HTMLElement;
   emit?: EmitType;
