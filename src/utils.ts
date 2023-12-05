@@ -10,7 +10,7 @@ export function $<T extends HTMLElement>({
   style,
 }: {
   tagName?: string;
-  attributes?: { [key: string]: any };
+  attributes?: { [key: string]: unknown };
   children?: string | Array<Node>;
   style?: Partial<CSSStyleDeclaration>;
 }): T {
