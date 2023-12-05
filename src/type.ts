@@ -10,7 +10,7 @@ export interface PopoverConfig {
   placement?: `${PlacementType}`;
   showArrow?: boolean;
   appendTo?: HTMLElement;
-  emit?: EmitType;
+  emit?: `${EmitType}`;
   defaultOpen?: boolean;
   openDelay?: number;
   closeDelay?: number;
