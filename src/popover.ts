@@ -51,7 +51,7 @@ export default class Popover {
   /* private property */
   #isAnimating = false;
   #animationClass?: AnimationClass;
-  #prevPlacement?: PlacementType;
+  #prevPlacement?: `${PlacementType}`;
   #showRaf?: number;
   #hideRaf?: number;
   #clearShow?: () => void;
@@ -639,7 +639,7 @@ export default class Popover {
     triggerElement: HTMLElement;
     popoverElement: HTMLElement;
     appendToElement?: HTMLElement;
-    placement: PlacementType | "auto";
+    placement: `${PlacementType}` | "auto";
     margin?: number;
   }) {
     // init
@@ -1123,7 +1123,7 @@ export default class Popover {
     margin = 0,
   }: {
     popElement: HTMLElement;
-    placement: PlacementType;
+    placement: `${PlacementType}`;
     margin: number;
   }) => {
     const {
