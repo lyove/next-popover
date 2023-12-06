@@ -62,8 +62,8 @@ const popover = new Popover({
   trigger, // required
   content, // required
   appendTo,
-  placement: PlacementType.Top, // Set the position of the popover
-  emit: EmitType.Hover // Set to open the popover when the mouse hovers over the trigger
+  placement: "top", // Set the position of the popover
+  emit: "hover" // Set to open the popover when the mouse hovers over the trigger
 });
 
 trigger.onclick = () => {
@@ -156,9 +156,9 @@ new Popover({
 | `trigger` | `HTMLElement ` | | `Required`. The trigger element |
 | `content` | `HTMLElement \| string \| number` | | `Required`. The content element to be popped up |
 | `appendTo` | `HTMLElement` | `document.body` | The element to append the popover to. |
-| `placement` | `PlacementType` | `PlacementType.Top` | The placement of the popover. |
+| `placement` | `top` `left` `right` `bottom` `top-left` `top-right` `bottom-left` `bottom-right` `left-top` `left-bottom` `right-top` `right-bottom` | `top` | The placement of the popover. |
 | `showArrow` | `Boolean` | `true` | Whether to show arrow |
-| `emit` | `EmitType` | `EmitType.Click` | Trigger emit type |
+| `emit` | `click` or `hover` | `click` | Trigger emit type |
 | `open` | `boolean` |  | Whether to open the popover box by default |
 | `openDelay` | `number` | `100` | Open delay |
 | `closeDelay` | `number` | `100` | Close delay |
