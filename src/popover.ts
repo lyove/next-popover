@@ -39,7 +39,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
  * A lightweight smart javascript popover library
  */
 export default class Popover {
-  /* public property */
+  /* public field */
   config!: RequireOneKey<PopoverConfig, "appendTo">;
   popoverRoot!: HTMLElement;
   popoverWrapper!: HTMLElement;
@@ -48,7 +48,7 @@ export default class Popover {
   opened = false;
   closed = true;
 
-  /* private property */
+  /* private field */
   #isAnimating = false;
   #animationClass?: AnimationClass;
   #prevPlacement?: `${PlacementType}`;
