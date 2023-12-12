@@ -21,11 +21,11 @@ const ContentClassName = "popover-content";
 const ArrowClass = "popover-arrow";
 
 // default config
-const DefaultConfig: Partial<PopoverConfig> = {
-  placement: PlacementType.Top,
+const defaultConfig: Partial<PopoverConfig> = {
+  placement: "top",
   showArrow: true,
   appendTo: document.body,
-  emit: EmitType.Click,
+  emit: "click",
   animationClass: "fade",
   clickOutsideClose: true,
   enterable: true,
@@ -66,23 +66,23 @@ export default class Popover {
    * @param config
    */
   constructor(config: PopoverConfig) {
-    if (config) {
-      this.config = this.#getConfig(config);
-      const { trigger, content } = this.config;
-      if (
-        !trigger ||
-        !(trigger instanceof HTMLElement) ||
-        !content ||
-        !(
-          content instanceof HTMLElement ||
-          typeof content === "string" ||
-          typeof content === "number"
-        )
-      ) {
-        throw new Error("Invalid configuration");
-      }
-      this.init();
+    this.config = {
+      ...defaultConfig,
+      ...config,
+      appendTo: config.appendTo || document.body,
+    };
+    const { trigger, content } = this.config;
+    if (
+      !(trigger instanceof HTMLElement) ||
+      !(
+        content instanceof HTMLElement ||
+        typeof content === "string" ||
+        typeof content === "number"
+      )
+    ) {
+      throw new Error("Invalid configuration");
     }
+    this.init();
   }
 
   /**
@@ -105,9 +105,7 @@ export default class Popover {
     this.#setAnimationClass();
 
     // listen scroll
-    if (this.#needListenScroll()) {
-      this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
-    }
+    this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
 
     // default open
     if (defaultOpen) {
@@ -369,14 +367,8 @@ export default class Popover {
               (o as Element).classList.add(triggerOpenClass);
             }
 
-            const need = this.#needListenScroll();
-            if (need) {
-              if (!this.#scrollElements) {
-                this.#scrollElements = $getScrollElements(trigger, appendTo);
-              }
-            } else if (this.#scrollElements) {
-              this.#removeScrollEvent();
-              this.#scrollElements = undefined;
+            if (!this.#scrollElements) {
+              this.#scrollElements = $getScrollElements(trigger, appendTo);
             }
           }
           break;
@@ -436,19 +428,13 @@ export default class Popover {
 
         case "closeOnScroll":
           {
-            const need = this.#needListenScroll();
-            if (need) {
-              if (!this.#scrollElements) {
-                this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
-                if (this.opened) {
-                  this.#scrollElements?.forEach((e) => {
-                    e.addEventListener("scroll", this.#onScroll, { passive: true });
-                  });
-                }
+            if (!this.#scrollElements) {
+              this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
+              if (this.opened) {
+                this.#scrollElements?.forEach((e) => {
+                  e.addEventListener("scroll", this.#onScroll, { passive: true });
+                });
               }
-            } else if (this.#scrollElements) {
-              this.#removeScrollEvent();
-              this.#scrollElements = undefined;
             }
           }
           break;
@@ -550,14 +536,6 @@ export default class Popover {
   /**
    * Popover class private field
    */
-
-  #getConfig(config: PopoverConfig) {
-    return {
-      ...DefaultConfig,
-      ...config,
-      appendTo: config.appendTo || document.body,
-    };
-  }
 
   #createPopover() {
     const { content, appendTo, wrapperClass, showArrow } = this.config;
@@ -1111,11 +1089,6 @@ export default class Popover {
       onExited();
     }
   };
-
-  #needListenScroll() {
-    const { trigger, appendTo } = this.config;
-    return trigger instanceof HTMLElement && appendTo;
-  }
 
   #getPopoverEnterableBoundary = ({
     popElement,
