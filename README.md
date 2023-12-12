@@ -162,6 +162,7 @@ new Popover({
 | `open` | `boolean` |  | Whether to open the popover box by default |
 | `openDelay` | `number` | `100` | Open delay |
 | `closeDelay` | `number` | `100` | Close delay |
+| `offset` | `number` | `8` | Popover offset |
 | `enterable` | `boolean` | `true` | When `emit` is set to `hover`, can the mouse enter the popover |
 | `disabled` | `boolean` | | Disabled |
 | `clickOutsideClose` | `boolean` | `true` | Automatically close the popover when clicking outside |

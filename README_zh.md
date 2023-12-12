@@ -155,6 +155,7 @@ new Popover({
 | `defaultOpen` | `boolean` | | 是否默认打开弹框 |
 | `openDelay` | `number` | `100` | 打开延迟 |
 | `closeDelay` | `number` | `100` | 关闭延迟 |
+| `offset` | `number` | `8` | 弹框偏移数值 |
 | `enterable` | `boolean` | `true` | 当 `emit` 等于 `hover` 时，鼠标是否可进入弹框 |
 | `disabled` | `boolean` | | 是否禁用 |
 | `clickOutsideClose` | `boolean` | `true` | 点击外部自动关闭弹出 |

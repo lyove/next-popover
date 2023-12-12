@@ -14,7 +14,7 @@ export interface PopoverConfig {
   defaultOpen?: boolean;
   openDelay?: number;
   closeDelay?: number;
-  margin?: number;
+  offset?: number;
   enterable?: boolean;
   disabled?: boolean;
   clickOutsideClose?: boolean;

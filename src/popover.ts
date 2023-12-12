@@ -31,7 +31,7 @@ const DefaultConfig: Partial<PopoverConfig> = {
   enterable: true,
   openDelay: 50,
   closeDelay: 50,
-  margin: 8,
+  offset: 8,
 };
 
 /**
@@ -126,7 +126,7 @@ export default class Popover {
       animationClass,
       appendTo,
       placement,
-      margin,
+      offset,
       onBeforeEnter,
       onOpen,
     } = this.config;
@@ -172,7 +172,7 @@ export default class Popover {
       popoverElement: this.popoverRoot,
       appendToElement: appendTo,
       placement: placement ? placement : PlacementType.Top,
-      margin: margin,
+      offset: offset,
     });
 
     const { placement: position, left: x, top: y } = computedPosition;
@@ -291,13 +291,13 @@ export default class Popover {
    */
   update() {
     if (this.opened && !this.#isAnimating) {
-      const { trigger, animationClass, appendTo, placement, margin } = this.config;
+      const { trigger, animationClass, appendTo, placement, offset } = this.config;
       const computedPosition = this.#getPopoverPosition({
         triggerElement: trigger,
         popoverElement: this.popoverRoot,
         appendToElement: appendTo,
         placement: placement ? placement : PlacementType.Top,
-        margin: margin,
+        offset: offset,
       });
       const { placement: position, left: x, top: y } = computedPosition;
 
@@ -634,13 +634,13 @@ export default class Popover {
     // Placement of popover(top, bottom, left, right, auto), default auto
     placement = "auto",
     // Space between popover and its trigger (in pixel), default 0
-    margin = 0,
+    offset = 0,
   }: {
     triggerElement: HTMLElement;
     popoverElement: HTMLElement;
     appendToElement?: HTMLElement;
     placement: `${PlacementType}` | "auto";
-    margin?: number;
+    offset?: number;
   }) {
     // init
     if (!triggerElement || !popoverElement) {
@@ -696,11 +696,11 @@ export default class Popover {
     } = {
       // top-left
       "top-start": {
-        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - offset,
         left: triggerElementLeft - popoverElementLeft,
       },
       top: {
-        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - offset,
         left:
           triggerElementLeft +
           triggerElementWidth / 2 -
@@ -708,16 +708,16 @@ export default class Popover {
       },
       // top-right
       "top-end": {
-        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - margin,
+        top: triggerElementTop - (popoverElementTop + popoverElementHeight) - offset,
         left: triggerElementLeft + triggerElementWidth - (popoverElementLeft + popoverElementWidth),
       },
       // bottom-left
       "bottom-start": {
-        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + offset,
         left: triggerElementLeft - popoverElementLeft,
       },
       bottom: {
-        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + offset,
         left:
           triggerElementLeft +
           triggerElementWidth / 2 -
@@ -725,42 +725,42 @@ export default class Popover {
       },
       // bottom-right
       "bottom-end": {
-        top: triggerElementTop + triggerElementHeight - popoverElementTop + margin,
+        top: triggerElementTop + triggerElementHeight - popoverElementTop + offset,
         left: triggerElementLeft + triggerElementWidth - (popoverElementLeft + popoverElementWidth),
       },
       // right-top
       "right-start": {
         top: triggerElementTop - popoverElementTop,
-        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + offset,
       },
       right: {
         top:
           triggerElementTop +
           triggerElementHeight / 2 -
           (popoverElementTop + popoverElementHeight / 2),
-        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + offset,
       },
       // right-bottom
       "right-end": {
         top: triggerElementTop + triggerElementHeight - (popoverElementTop + popoverElementHeight),
-        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + margin,
+        left: triggerElementLeft + triggerElementWidth - popoverElementLeft + offset,
       },
       // left-top
       "left-start": {
         top: triggerElementTop - popoverElementTop,
-        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - offset,
       },
       left: {
         top:
           triggerElementTop +
           triggerElementHeight / 2 -
           (popoverElementTop + popoverElementHeight / 2),
-        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - offset,
       },
       // left-bottom
       "left-end": {
         top: triggerElementTop + triggerElementHeight - (popoverElementTop + popoverElementHeight),
-        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - margin,
+        left: triggerElementLeft - popoverElementLeft - popoverElementWidth - offset,
       },
     };
 
@@ -873,14 +873,14 @@ export default class Popover {
   }, 200);
 
   #onTriggerLeave = debounce((event: MouseEvent) => {
-    const { emit, enterable, margin } = this.config;
+    const { emit, enterable, offset } = this.config;
 
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
       const interactiveBoundary = this.#getPopoverEnterableBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
-        margin: margin || 0,
+        offset: offset || 0,
       });
       const isHoverOver = this.#isCursorInsideEnterableBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
@@ -923,7 +923,7 @@ export default class Popover {
   };
 
   #onPopRootLeave = (event: MouseEvent) => {
-    const { emit, enterable, margin } = this.config;
+    const { emit, enterable, offset } = this.config;
 
     this.#clearTimers();
 
@@ -932,7 +932,7 @@ export default class Popover {
       const interactiveBoundary = this.#getPopoverEnterableBoundary({
         popElement: this.popoverRoot,
         placement: this.#prevPlacement as PlacementType,
-        margin: margin || 0,
+        offset: offset || 0,
       });
       const isHoverOver = this.#isCursorInsideEnterableBoundary(cursorXY, interactiveBoundary);
       if (isHoverOver) {
@@ -990,7 +990,7 @@ export default class Popover {
   };
 
   #onMouseMove = (event: MouseEvent) => {
-    const { emit, enterable, trigger, margin } = this.config;
+    const { emit, enterable, trigger, offset } = this.config;
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
       const triggerBoundary = $getElementBoundary(trigger);
@@ -999,7 +999,7 @@ export default class Popover {
         const popoverBoundary = this.#getPopoverEnterableBoundary({
           popElement: this.popoverRoot,
           placement: this.#prevPlacement as PlacementType,
-          margin: margin || 0,
+          offset: offset || 0,
         });
         const isHoverPop = this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary);
         if (!isHoverPop) {
@@ -1120,11 +1120,11 @@ export default class Popover {
   #getPopoverEnterableBoundary = ({
     popElement,
     placement,
-    margin = 0,
+    offset = 0,
   }: {
     popElement: HTMLElement;
     placement: `${PlacementType}`;
-    margin: number;
+    offset: number;
   }) => {
     const {
       Top,
@@ -1147,18 +1147,18 @@ export default class Popover {
     let right = popElementCoords.right;
 
     if (placement === Top || placement === TopStart || placement === TopEnd) {
-      bottom += margin;
+      bottom += offset;
     }
 
     if (placement === Bottom || placement === BottomStart || placement === BottomEnd) {
-      top -= margin;
+      top -= offset;
     }
 
     if (placement === Left || placement === LeftStart || placement === LeftEnd) {
-      right += margin;
+      right += offset;
     }
     if (placement === Right || placement === RightStart || placement === RightEnd) {
-      left -= margin;
+      left -= offset;
     }
     return {
       left: Math.trunc(left),
