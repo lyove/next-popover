@@ -180,7 +180,7 @@ export default class Popover {
     const { placement: position, left: x, top: y } = computedPosition;
 
     // remove all placement class
-    PlacementArray.forEach(({ key, value }) => {
+    PlacementArray.forEach(({ value }) => {
       this.popoverWrapper.classList.remove(`placement-${value}`);
     });
 
@@ -308,7 +308,7 @@ export default class Popover {
       const { placement: position, left: x, top: y } = computedPosition;
 
       // remove all placement class
-      PlacementArray.forEach(({ key, value }) => {
+      PlacementArray.forEach(({ value }) => {
         this.popoverWrapper.classList.remove(`placement-${value}`);
       });
       this.popoverWrapper.classList.add(`placement-${position}`);
