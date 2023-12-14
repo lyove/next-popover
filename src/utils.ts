@@ -233,21 +233,23 @@ export function $getMoreVisibleSides($element: HTMLElement) {
  * @param {number} delay
  * @param {Boolean} immediate
  */
-// export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean) {
-//   let timer: any = null;
-//   return function (...args: any) {
-//     if (timer) {
-//       clearTimeout(timer);
-//     }
-//     if (!timer && immediate) {
-//       fn.apply(this, args);
-//     } else {
-//       timer = setTimeout(() => {
-//         fn.apply(this, args);
-//       }, delay);
-//     }
-//   };
-// }
+/*
+export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean) {
+  let timer: any = null;
+  return function (...args: any) {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    if (!timer && immediate) {
+      fn.apply(this, args);
+    } else {
+      timer = setTimeout(() => {
+        fn.apply(this, args);
+      }, delay);
+    }
+  };
+}
+*/
 export function debounce(fn: (arg?: any) => any, delay: number, immediate?: boolean) {
   let timeout: any = null;
   return function (...args: any) {
