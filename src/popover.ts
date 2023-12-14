@@ -8,6 +8,7 @@ import {
   $getCursorCoords,
   $getElementBoundary,
   $getMoreVisibleSides,
+  enumToObjectArray,
   debounce,
   throttle,
 } from "./utils";
@@ -19,6 +20,9 @@ const NextPopoverId = "next-popover";
 const WrapperClassName = "popover-wrapper";
 const ContentClassName = "popover-content";
 const ArrowClass = "popover-arrow";
+
+// Placement Array
+const PlacementArray = enumToObjectArray(PlacementType);
 
 // default config
 const defaultConfig: Partial<PopoverConfig> = {
@@ -148,8 +152,8 @@ export default class Popover {
       }
     }
 
-    this.#showPopover();
     this.popoverWrapper.classList.add(`placement-${placement}`);
+    this.#showPopover();
 
     if (this.#animationClass) {
       const { enterFrom, enterActive, enterTo } = this.#animationClass;
@@ -175,7 +179,11 @@ export default class Popover {
 
     const { placement: position, left: x, top: y } = computedPosition;
 
-    this.popoverWrapper.classList.remove(`placement-${this.#prevPlacement}`);
+    // remove all placement class
+    PlacementArray.forEach(({ key, value }) => {
+      this.popoverWrapper.classList.remove(`placement-${value}`);
+    });
+
     this.popoverWrapper.classList.add(`placement-${position}`);
 
     if (this.#animationClass && position !== this.#prevPlacement) {
@@ -299,7 +307,10 @@ export default class Popover {
       });
       const { placement: position, left: x, top: y } = computedPosition;
 
-      this.popoverWrapper.classList.remove(`placement-${this.#prevPlacement}`);
+      // remove all placement class
+      PlacementArray.forEach(({ key, value }) => {
+        this.popoverWrapper.classList.remove(`placement-${value}`);
+      });
       this.popoverWrapper.classList.add(`placement-${position}`);
 
       if (this.#animationClass && position !== this.#prevPlacement) {
@@ -546,6 +557,9 @@ export default class Popover {
       attributes: {
         id: NextPopoverId,
       },
+    });
+    $setStyle(this.popoverRoot, {
+      opacity: "0",
     });
 
     // Popover wrapper

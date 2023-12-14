@@ -1,6 +1,8 @@
 $bgColor: #fff;
 $fontColor: rgba(0, 0, 0, 0.88);
 $radiusSize: 6px;
-$arrowSize: 12px;
+$arrowSize: 20px;
 $arrowHalfSize: math.div($arrowSize, 2);
+$arrowBeforeSize: 12px;
+$arrowBeforeHalfSize: math.div($arrowBeforeSize, 2);
 $boxShadow: 0 -2px 16px 0 rgba(0, 0, 0, 0.08),0 3px 6px -4px rgba(0, 0, 0, 0.12),0 9px 28px 8px rgba(0, 0, 0, 0.05);

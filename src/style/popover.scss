@@ -17,17 +17,14 @@
     position: absolute;
     width: $arrowSize;
     height: $arrowSize;
-    overflow: visible;
     pointer-events: none;
-    z-index: 1;
+    overflow: hidden;
 
     &::before {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      width: $arrowSize;
-      height: $arrowSize;
+      width: $arrowBeforeSize;
+      height: $arrowBeforeSize;
       background-color: $bgColor;
       @include prefix(transform, rotate(45deg));
     }
@@ -45,7 +42,12 @@
   &.placement-top-start,
   &.placement-top-end {
     & > .popover-arrow {
-      bottom: -$arrowHalfSize;
+      bottom: -$arrowSize;
+      &::before {
+        top: -#{$arrowBeforeHalfSize + 1px};
+        left: 4px;
+        border-radius: 0 0 3px 0;
+      }
     }
   }
   &.placement-top {
@@ -55,12 +57,12 @@
   }
   &.placement-top-start {
     & > .popover-arrow {
-      left: #{$arrowHalfSize + 8px};
+      left: $arrowHalfSize;
     }
   }
   &.placement-top-end {
     & > .popover-arrow {
-      right: #{$arrowHalfSize + 8px};
+      right: $arrowHalfSize;
     }
   }
   // right
@@ -68,7 +70,12 @@
   &.placement-right-start,
   &.placement-right-end {
     & > .popover-arrow {
-      left: -#{$arrowHalfSize - 1px};
+      left: -$arrowSize;
+      &::before {
+        right: -#{$arrowBeforeHalfSize + 1px};
+        top: 4px;
+        border-radius: 0 0 0 3px;
+      }
     }
   }
   &.placement-right {
@@ -78,12 +85,12 @@
   }
   &.placement-right-start {
     & > .popover-arrow {
-      top: #{$arrowHalfSize + 4px};
+      top: $arrowHalfSize;
     }
   }
   &.placement-right-end {
     & > .popover-arrow {
-      bottom: #{$arrowHalfSize + 4px};
+      bottom: $arrowHalfSize;
     }
   }
   // bottom
@@ -91,7 +98,12 @@
   &.placement-bottom-start,
   &.placement-bottom-end {
     & > .popover-arrow {
-      top: -#{$arrowHalfSize - 1px};
+      top: -$arrowSize;
+      &::before {
+        bottom: -#{$arrowBeforeHalfSize + 1px};
+        left: 4px;
+        border-radius: 3px 0 0 0;
+      }
     }
   }
   &.placement-bottom {
@@ -101,12 +113,12 @@
   }
   &.placement-bottom-start {
     & > .popover-arrow {
-      left: #{$arrowHalfSize + 8px};
+      left: $arrowHalfSize;
     }
   }
   &.placement-bottom-end {
     & > .popover-arrow {
-      right: #{$arrowHalfSize + 8px};
+      right: $arrowHalfSize;
     }
   }
   // left
@@ -114,7 +126,12 @@
   &.placement-left-start,
   &.placement-left-end {
     & > .popover-arrow {
-      right: -#{$arrowHalfSize - 1px};
+      right: -$arrowSize;
+      &::before {
+        left: -#{$arrowBeforeHalfSize + 1px};
+        top: 4px;
+        border-radius: 0 3px 0 0;
+      }
     }
   }
   &.placement-left {
@@ -124,12 +141,12 @@
   }
   &.placement-left-start {
     & > .popover-arrow {
-      top: #{$arrowHalfSize + 4px};
+      top: $arrowHalfSize;
     }
   }
   &.placement-left-end {
     & > .popover-arrow {
-      bottom: #{$arrowHalfSize + 4px};
+      bottom: $arrowHalfSize;
     }
   }
 }

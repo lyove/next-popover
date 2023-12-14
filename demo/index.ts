@@ -61,18 +61,6 @@ window.onload = function () {
       case "mount":
         defaultConfig.appendTo = value === "triggerParent" ? mountElement : document.body;
         break;
-      case "offset":
-        offset.textContent = `${value}ms`;
-        defaultConfig.offset = Number(value);
-        break;
-      case "openDelay":
-        openDelay.textContent = `${value}ms`;
-        defaultConfig.openDelay = Number(value);
-        break;
-      case "closeDelay":
-        closeDelay.textContent = `${value}ms`;
-        defaultConfig.closeDelay = Number(value);
-        break;
       case "extra":
         if (value === "animation") {
           defaultConfig.animationClass = checked ? "fade" : "";
@@ -83,7 +71,33 @@ window.onload = function () {
       default:
         defaultConfig[name] = value;
     }
-
+    popovers.forEach((pop) => {
+      pop.updateConfig({
+        ...pop.config,
+        ...defaultConfig,
+        placement: pop.config.placement,
+        content: pop.config.content,
+      });
+    });
+  };
+  // onInput
+  configure.oninput = ({ target }) => {
+    const { name, value } = target as any;
+    switch (name) {
+      case "offset":
+        offset.textContent = `${value}px`;
+        defaultConfig.offset = Number(value);
+        break;
+      case "openDelay":
+        openDelay.textContent = `${value}ms`;
+        defaultConfig.openDelay = Number(value);
+        break;
+      case "closeDelay":
+        closeDelay.textContent = `${value}ms`;
+        defaultConfig.closeDelay = Number(value);
+        break;
+      default:
+    }
     popovers.forEach((pop) => {
       pop.updateConfig({
         ...pop.config,

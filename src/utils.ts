@@ -228,6 +228,18 @@ export function $getMoreVisibleSides($element: HTMLElement) {
  */
 
 /**
+ * Enum To ObjectArray
+ * @param enums
+ * @returns Array
+ */
+export function enumToObjectArray(enums: any): any[] {
+  return Object.keys(enums).map((key) => ({
+    name: key,
+    value: enums[key],
+  }));
+}
+
+/**
  * @desc Debounce
  * @param {function} fn
  * @param {number} delay
