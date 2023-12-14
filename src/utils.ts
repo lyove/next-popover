@@ -248,27 +248,27 @@ export function $getMoreVisibleSides($element: HTMLElement) {
 //     }
 //   };
 // }
-export function debounce(fn, delay, immediate) {
-  let timeout;
-  return function (...args) {
-      const _this = this;
-      if (timeout) {
-        clearTimeout(timeout);
+export function debounce(fn: (arg?: any) => any, delay: number, immediate?: boolean) {
+  let timeout: any = null;
+  return function (...args: any) {
+    const _this = this;
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    if (immediate) {
+      const callNow = !timeout;
+      timeout = setTimeout(() => {
+        timeout = null;
+      }, delay);
+      if (callNow) {
+        fn.apply(_this, args);
       }
-      if (immediate) {
-          let callNow = !timeout;
-          timeout = setTimeout(() => {
-            timeout = null;
-          }, delay);
-          if (callNow) {
-            fn.apply(_this, args);
-          }
-      } else {
-          timeout = setTimeout(() => {
-            fn.apply(_this, args);
-          }, delay);
-      }
-  }
+    } else {
+      timeout = setTimeout(() => {
+        fn.apply(_this, args);
+      }, delay);
+    }
+  };
 }
 
 /**
