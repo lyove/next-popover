@@ -1,0 +1,167 @@
+/**
+ * Variables
+ */
+ @use "sass:math";
+
+ $arrowSize: 16px;
+ $arrowInerSize: 11.3137085px;
+ $lightBgColor: rgba(255, 255, 255, 0.9);
+ $lightFontColor: rgba(0, 0, 0, 0.8);
+ $darkBgColor: rgba(0, 0, 0, 0.8);
+ $darkFontColor: rgba(255, 255, 255, 0.9);
+ $radiusSize: 6px;
+ 
+ $boxShadow: 0 -2px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+   0 9px 28px 8px rgba(0, 0, 0, 0.05);
+ 
+ /**
+  * Next-Popver Styles
+  */
+ #next-popover {
+   position: absolute;
+   left: 0;
+   top: 0;
+   z-index: 5555;
+ }
+ 
+ .popover-wrapper {
+   position: relative;
+   box-sizing: content-box;
+   border-radius: $radiusSize;
+   box-shadow: $boxShadow;
+ 
+   & .popover-arrow {
+     position: absolute;
+ 
+     .popover-arrow-inner {
+       position: absolute;
+       width: $arrowInerSize;
+       height: $arrowInerSize;
+       margin: auto;
+       border-radius: 0 0 3px;
+       pointer-events: auto;
+       &::before {
+         display: block;
+         content: "";
+         position: absolute;
+         top: -$arrowInerSize;
+         left: -$arrowInerSize;
+         width: $arrowInerSize * 2;
+         height: $arrowInerSize * 2;
+         background-repeat: no-repeat;
+         background-position: -10px -10px;
+         -webkit-clip-path: inset(33% 33%);
+         clip-path: inset(33% 33%);
+         -webkit-clip-path: path(
+           "M 9.849242404917499 24.091883092036785 A 5 5 0 0 1 13.384776310850237 22.627416997969522 L 20.627416997969522 22.627416997969522 A 2 2 0 0 0 22.627416997969522 20.627416997969522 L 22.627416997969522 13.384776310850237 A 5 5 0 0 1 24.091883092036785 9.849242404917499 L 23.091883092036785 9.849242404917499 L 9.849242404917499 23.091883092036785 Z"
+         );
+         clip-path: path(
+           "M 9.849242404917499 24.091883092036785 A 5 5 0 0 1 13.384776310850237 22.627416997969522 L 20.627416997969522 22.627416997969522 A 2 2 0 0 0 22.627416997969522 20.627416997969522 L 22.627416997969522 13.384776310850237 A 5 5 0 0 1 24.091883092036785 9.849242404917499 L 23.091883092036785 9.849242404917499 L 9.849242404917499 23.091883092036785 Z"
+         );
+       }
+     }
+   }
+ 
+   /* placement arrow */
+   // top
+   &.placement__top,
+   &.placement__top-start,
+   &.placement__top-end {
+     .popover-arrow {
+       width: $arrowSize;
+       height: calc($arrowSize / 2);
+       overflow-y: clip;
+       & > .popover-arrow-inner {
+         transform: translate(2.4px, -6px) rotate(45deg);
+       }
+     }
+   }
+   // right
+   &.placement__right,
+   &.placement__right-start,
+   &.placement__right-end {
+     .popover-arrow {
+       width: calc($arrowSize / 2);
+       height: $arrowSize;
+       overflow-x: clip;
+       .popover-arrow-inner {
+         transform: translate(2px, 2.6px) rotate(135deg);
+       }
+     }
+   }
+   // bottom
+   &.placement__bottom,
+   &.placement__bottom-start,
+   &.placement__bottom-end {
+     .popover-arrow {
+       width: $arrowSize;
+       height: calc($arrowSize / 2);
+       overflow-y: clip;
+       .popover-arrow-inner {
+         transform: translate(2.4px, 2.4px) rotate(225deg);
+       }
+     }
+   }
+   // left
+   &.placement__left,
+   &.placement__left-start,
+   &.placement__left-end {
+     .popover-arrow {
+       width: calc($arrowSize / 2);
+       height: $arrowSize;
+       overflow-x: clip;
+       .popover-arrow-inner {
+         transform: translate(-6.0px, 2.4px) rotate(315deg);
+       }
+     }
+   }
+ 
+   & .popover-content {
+     padding: 8px 12px;
+   }
+ }
+ 
+ .popover-wrapper.mode__light {
+   background-color: $lightBgColor;
+   color: $lightFontColor;
+   & .popover-arrow-inner {
+     --arrow-background-color: linear-gradient(
+       to right bottom,
+       rgba(255, 255, 255, 0.75),
+       rgba(255, 255, 255, 0.85)
+     );
+ 
+     &::before {
+       background: var(--arrow-background-color);
+     }
+   }
+ }
+ 
+ .popover-wrapper.mode__dark {
+   background-color: $darkBgColor;
+   color: $darkFontColor;
+   & .popover-arrow-inner {
+     --arrow-background-color: linear-gradient(
+       to right bottom,
+       rgba(0, 0, 0, 0.65),
+       rgba(0, 0, 0, 0.75)
+     );
+ 
+     &::before {
+       background: var(--arrow-background-color);
+     }
+   }
+ }
+ 
+ /* animation style */
+ .fade-enter-from,
+ .fade-exit-to {
+   opacity: 0;
+   transform: scale(0.7);
+ }
+ 
+ .fade-enter-active,
+ .fade-exit-active {
+   transition: transform 0.1s cubic-bezier(0.34, 0.69, 0.1, 1), opacity 0.1s ease;
+ }
+ 
