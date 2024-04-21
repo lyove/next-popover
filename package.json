@@ -1,6 +1,6 @@
 {
   "name": "next-popover",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "A lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.",
   "repository": {
     "type": "git",
