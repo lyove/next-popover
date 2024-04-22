@@ -64,11 +64,22 @@ export function $clearChildren($element: Element) {
 }
 
 /**
- * set style
+ * get element style
+ */
+export function $getStyle($element: HTMLElement, propName: string) {
+  if (!($element instanceof HTMLElement)) {
+    throw new Error("Invalid param");
+  }
+  const computedStyle = getComputedStyle($element, null);
+  return computedStyle.getPropertyValue(propName);
+}
+
+/**
+ * set element style
  */
 export function $setStyle($element: HTMLElement, style: { [key: string]: string | number }) {
-  if (!$element) {
-    return;
+  if (!($element instanceof HTMLElement)) {
+    throw new Error("Invalid param");
   }
 
   Object.entries(style || {}).forEach(([key, val]) => {
@@ -106,6 +117,24 @@ export function $setData($element: HTMLElement, data: { [key: string]: any }) {
 export function $getStyleProperties($element: HTMLElement, key: string) {
   const styles = window.getComputedStyle($element);
   return (styles as any)[key]?.split(", ");
+}
+
+/**
+ * Get Element Width & Height
+ * @param $element HTMLElement
+ * @returns {width: number, height: number}
+ */
+export function $getElementWidthHeight($element: HTMLElement) {
+  if (!($element instanceof HTMLElement)) {
+    throw new Error("Invalid param");
+  }
+  const style = getComputedStyle($element, null);
+  const width = style.getPropertyValue("width").replace(/(\d+(\.\d+)?)(px|em|rem)/g, "$1");
+  const height = style.getPropertyValue("height").replace(/(\d+(\.\d+)?)(px|em|rem)/g, "$1");
+  return {
+    width: Number(width),
+    height: Number(height),
+  };
 }
 
 /*

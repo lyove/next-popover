@@ -7,6 +7,7 @@ import {
   $getAbsoluteCoords,
   $getCursorCoords,
   $getElementBoundary,
+  $getElementWidthHeight,
   $getMoreVisibleSides,
   $getScrollbarSize,
   enumToObjectArray,
@@ -602,7 +603,7 @@ export default class Popover {
       position: "absolute",
       left: 0,
       top: 0,
-      opacity: 0,
+      opacity: 0.001,
     });
 
     // Popover wrapper
@@ -743,10 +744,12 @@ export default class Popover {
     const popoverElementLeft = popoverElementCoords.left;
 
     // arrow Rect
-    const arrowElementCoords =
-      arrowElement instanceof HTMLElement ? $getAbsoluteCoords(arrowElement) : null;
-    const arrowElementWidth = arrowElementCoords?.width || 0;
-    const arrowElementHeight = arrowElementCoords?.height || 0;
+    const arrowElementWidthHeight =
+      arrowElement instanceof HTMLElement
+        ? $getElementWidthHeight(arrowElement)
+        : { width: 0, height: 0 };
+    const arrowElementWidth = arrowElementWidthHeight.width;
+    const arrowElementHeight = arrowElementWidthHeight.height;
 
     // appendToElement Rect
     const appendToElementCoords = $getAbsoluteCoords(appendToElement);
