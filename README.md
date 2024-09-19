@@ -9,9 +9,7 @@
 
 ![Header Image](public/Popover.png)
 
-Next-Popover is a lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.
-
-https://vywrrk-3000.csb.app/  
+Next-Popover is a lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly. 
 
 [![Demo](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/next-popover-vywrrk)
 
