@@ -24,7 +24,7 @@ export enum ModeType {
 }
 
 export enum StatusType {
-  Opening = "ppening",
+  Opening = "opening",
   Opened = "opened",
   Closing = "closing",
   Closed = "closed",
