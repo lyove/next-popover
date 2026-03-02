@@ -15,7 +15,7 @@ import {
   throttle,
 } from "./utils";
 import { EmitType, PlacementType, ModeType, StatusType } from "./constant";
-import "./style/popover.scss";
+import "./style.scss";
 
 // popover classnames
 const NextPopoverId = "next-popover";
