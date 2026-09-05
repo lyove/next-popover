@@ -1,6 +1,6 @@
 {
   "name": "next-popover",
-  "version": "0.0.5",
+  "version": "0.0.50",
   "description": "A lightweight and simple popover, tooltip, dropdown library, with no other dependencies, and Typescript friendly.",
   "repository": {
     "type": "git",
@@ -13,6 +13,9 @@
     "dist"
   ],
   "main": "./dist/popover.es.js",
+  "module": "./dist/popover.es.js",
+  "unpkg": "./dist/popover.umd.js",
+  "jsdelivr": "./dist/popover.umd.js",
   "types": "./dist/popover.es.d.ts",
   "exports": {
     ".": {
@@ -40,12 +43,14 @@
   "scripts": {
     "dev": "vite --open --mode dev",
     "build": "tsc && vite build --mode build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
+    "prepublishOnly": "npm test && npm run build",
+    "release": "npm version patch && npm publish",
     "test": "jest --runInBand",
     "test:coverage": "jest --runInBand --coverage",
     "eslint": "eslint . --ext .js,.cjs,.ts,.jsx,.tsx, --quiet --fix --ignore-path ./.gitignore",
     "prettier": "prettier . --loglevel warn --write './**/*.{js,jsx,ts,tsx,css,html,json}'",
     "stylelint": "stylelint ./**/*.{css,less,scss,sass} --fix",
-    "prepare": "git init && husky install"
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",
