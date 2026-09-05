@@ -42,9 +42,10 @@ export function $<T extends HTMLElement>(params: ParamsType): T {
     }
   }
   // set style
+  const cssStyle = element.style as unknown as Record<string, string | number>;
   Object.entries(style || {}).forEach(([key, val]) => {
     if (typeof key !== "number") {
-      (<any>element.style)[key] = val;
+      cssStyle[key] = val as string | number;
     }
   });
 
@@ -82,9 +83,10 @@ export function $setStyle($element: HTMLElement, style: { [key: string]: string 
     throw new Error("Invalid param");
   }
 
+  const cssStyle = $element.style as unknown as Record<string, string | number>;
   Object.entries(style || {}).forEach(([key, val]) => {
     if (typeof key !== "number") {
-      (<any>$element.style)[key] = val;
+      cssStyle[key] = val as string | number;
     }
   });
 }
@@ -96,14 +98,17 @@ export function $setStyle($element: HTMLElement, style: { [key: string]: string 
  * @param value any
  * @returns HTMLElement
  */
-export function $setData($element: HTMLElement, data: { [key: string]: any }) {
+export function $setData(
+  $element: HTMLElement,
+  data: { [key: string]: string | number | boolean },
+) {
   if (!$element) {
     throw new Error("Invalid param");
   }
 
   Object.entries(data || {}).forEach(([key, val]) => {
     if (typeof key !== "number") {
-      $element.dataset[key] = val;
+      $element.dataset[key] = String(val);
     }
   });
 }
@@ -115,8 +120,8 @@ export function $setData($element: HTMLElement, data: { [key: string]: any }) {
  * @returns string
  */
 export function $getStyleProperties($element: HTMLElement, key: string) {
-  const styles = window.getComputedStyle($element);
-  return (styles as any)[key]?.split(", ");
+  const styles = window.getComputedStyle($element) as unknown as Record<string, string>;
+  return styles[key]?.split(", ");
 }
 
 /**
@@ -143,7 +148,7 @@ export function $getElementWidthHeight($element: HTMLElement) {
  * @param $appendTo HTMLElement
  * @returns HTMLElement
  */
-export function $getScrollElements($element: HTMLElement, $appendTo: HTMLElement) {
+export function $getScrollElements($element: HTMLElement | null, $appendTo: HTMLElement) {
   const scrollElements: HTMLElement[] = [];
   const isScrollElement = (el: HTMLElement) => {
     return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth;
@@ -152,9 +157,8 @@ export function $getScrollElements($element: HTMLElement, $appendTo: HTMLElement
     if (isScrollElement($element)) {
       scrollElements.push($element);
     }
-    if ($element.parentElement instanceof HTMLElement) {
-      $element = $element.parentElement;
-    }
+    // Bail out explicitly when parentElement is null, avoiding an infinite loop when appendTo is not in the ancestor chain
+    $element = $element.parentElement as HTMLElement | null;
   }
   return scrollElements;
 }
@@ -256,13 +260,22 @@ export function $getMoreVisibleSides($element: HTMLElement) {
  * Detect Scrollbar Width and Height
  * @returns { width: number, height: number }
  */
+let scrollbarSizeCache: { width: number; height: number } | null = null;
+
 export function $getScrollbarSize() {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return { width: 0, height: 0 };
+  }
+  if (scrollbarSizeCache) {
+    return scrollbarSizeCache;
+  }
+
   // Creating invisible container
   const outer = document.createElement("div");
   outer.style.visibility = "hidden";
   outer.style.overflow = "scroll"; // forcing scrollbar to appear
-  // @ts-ignore
-  outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
+  // msOverflowStyle is a legacy IE/Edge non-standard property not covered by the standard types
+  (outer.style as unknown as { msOverflowStyle: string }).msOverflowStyle = "scrollbar";
   outer.style.position = "absolute";
   outer.style.top = "-9999px";
   document.body.appendChild(outer);
@@ -278,10 +291,15 @@ export function $getScrollbarSize() {
   // Removing temporary elements from the DOM
   document.body.removeChild(outer);
 
-  return {
+  scrollbarSizeCache = {
     width: scrollbarWidth,
     height: scrollbarHeight,
   };
+  window.addEventListener("resize", () => {
+    scrollbarSizeCache = null;
+  });
+
+  return scrollbarSizeCache;
 }
 
 /**
@@ -293,7 +311,9 @@ export function $getScrollbarSize() {
  * @param enums
  * @returns Array
  */
-export function enumToObjectArray(enums: any): any[] {
+export function enumToObjectArray<T extends Record<string, string | number>>(
+  enums: T,
+): { name: string; value: string | number }[] {
   return Object.keys(enums).map((key) => ({
     name: key,
     value: enums[key],
@@ -306,27 +326,13 @@ export function enumToObjectArray(enums: any): any[] {
  * @param {number} delay
  * @param {Boolean} immediate
  */
-/*
-export function debounce(fn: (arg?: any) => any, delay = 0, immediate?: boolean) {
-  let timer: any = null;
-  return function (...args: any) {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    if (!timer && immediate) {
-      fn.apply(this, args);
-    } else {
-      timer = setTimeout(() => {
-        fn.apply(this, args);
-      }, delay);
-    }
-  };
-}
-*/
-export function debounce(fn: (arg?: any) => any, delay: number, immediate?: boolean) {
-  let timeout: any = null;
-  return function (...args: any) {
-    const _this = this;
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
+  delay: number,
+  immediate?: boolean,
+): (...args: A) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  return function (...args: A) {
     if (timeout) {
       clearTimeout(timeout);
     }
@@ -336,40 +342,53 @@ export function debounce(fn: (arg?: any) => any, delay: number, immediate?: bool
         timeout = null;
       }, delay);
       if (callNow) {
-        fn.apply(_this, args);
+        fn.apply(this, args);
       }
     } else {
       timeout = setTimeout(() => {
-        fn.apply(_this, args);
+        fn.apply(this, args);
       }, delay);
     }
   };
 }
 
 /**
- * Throttle
+ * Throttle (leading + trailing)
  * @param {function} fn
+ * @param {number} delay
  * @param {any} ctx
  */
-export function throttle(fn: () => void, ctx?: any): any {
-  let pending = false;
+export function throttle<A extends unknown[]>(
+  fn: (...args: A) => void,
+  delay = 0,
+  ctx?: unknown,
+): (...args: A) => void {
   let first = true;
+  let pending = false;
+  let lastRun = 0;
 
-  return function (...args: any) {
+  return function (...args: A) {
+    const now = Date.now();
+
     if (first) {
       first = false;
+      lastRun = now;
       return fn.apply(ctx, args);
     }
 
-    if (pending) {
-      return;
+    const remaining = delay - (now - lastRun);
+    if (remaining <= 0) {
+      lastRun = now;
+      return fn.apply(ctx, args);
     }
 
-    pending = true;
-
-    requestAnimationFrame(() => {
-      fn.apply(ctx, args);
-      pending = false;
-    });
+    if (!pending) {
+      pending = true;
+      setTimeout(() => {
+        pending = false;
+        lastRun = Date.now();
+        fn.apply(ctx, args);
+      }, remaining);
+    }
   };
 }

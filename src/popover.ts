@@ -11,17 +11,18 @@ import {
   $getMoreVisibleSides,
   $getScrollbarSize,
   enumToObjectArray,
-  debounce,
-  throttle,
 } from "./utils";
 import { EmitType, PlacementType, ModeType, StatusType } from "./constant";
 import "./style.scss";
 
 // popover classnames
-const NextPopoverId = "next-popover";
+const NextPopoverIdPrefix = "next-popover";
 const WrapperClassName = "popover-wrapper";
 const ContentClassName = "popover-content";
 const ArrowClassName = "popover-arrow";
+
+let popoverId = 0;
+const popoverRegistry = new Set<Popover>();
 
 // Placement Array
 const PlacementArray = enumToObjectArray(PlacementType);
@@ -36,8 +37,8 @@ const defaultConfig: Partial<PopoverConfig> = {
   animationClass: "fade",
   clickOutsideClose: true,
   enterable: true,
-  openDelay: 50,
-  closeDelay: 50,
+  openDelay: 80,
+  closeDelay: 200,
   offset: 16,
 };
 
@@ -54,16 +55,21 @@ export default class Popover {
   status: StatusType | null = null;
 
   /* private fields */
+  #id = ++popoverId;
+  #destroyed = false;
   #animationClass?: AnimationClass;
   #prevPlacement?: `${PlacementType}`;
   #showRaf?: number;
   #hideRaf?: number;
+  #scrollRaf?: number;
   #clearShowTransition?: () => void;
   #clearHideTransition?: () => void;
   #scrollElements?: HTMLElement[];
   #resizeObserver?: ResizeObserver;
-  #openTimer?: any;
-  #closeTimer?: any;
+  #openController?: AbortController;
+  #openTimer?: ReturnType<typeof setTimeout>;
+  #closeTimer?: ReturnType<typeof setTimeout>;
+  #hidePending = false;
 
   /**
    * Constructor
@@ -74,7 +80,7 @@ export default class Popover {
       ...defaultConfig,
       ...config,
       offset:
-        config.offset && !isNaN(config.offset) && config.offset >= 8
+        typeof config.offset === "number" && !isNaN(config.offset) && config.offset >= 0
           ? config.offset
           : defaultConfig.offset,
       appendTo: config.appendTo || document.body,
@@ -92,6 +98,8 @@ export default class Popover {
     } else if (content instanceof HTMLElement) {
       this.config.content = content.cloneNode(true) as HTMLElement;
     }
+
+    popoverRegistry.add(this);
 
     this.init();
   }
@@ -143,6 +151,10 @@ export default class Popover {
     } = this.config;
     const { popoverWrapper } = this.#getPopoverChildren();
 
+    if (this.#destroyed) {
+      return;
+    }
+
     if (
       config.disabled ||
       this.status === StatusType.Opening ||
@@ -156,6 +168,10 @@ export default class Popover {
       onBeforeEnter(this);
     }
 
+    if (this.#destroyed) {
+      return;
+    }
+
     this.cleanup();
 
     // status
@@ -164,11 +180,14 @@ export default class Popover {
     if (triggerOpenClass) {
       trigger.classList.add(triggerOpenClass);
     }
+    // a11y
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.setAttribute("aria-describedby", this.popoverElement.id);
     popoverWrapper?.classList.add(`placement__${placement}`);
 
     this.#appendPopover();
 
-    if (this.#animationClass) {
+    if (this.#animationClass && !this.#prefersReducedMotion()) {
       const { enterFrom, enterActive, enterTo } = this.#animationClass;
       popoverWrapper?.classList.add(enterFrom);
       this.#showRaf = requestAnimationFrame(() => {
@@ -223,14 +242,9 @@ export default class Popover {
       });
     }
 
-    document.addEventListener("click", this.#onDocClick);
-    document.addEventListener("mousemove", this.#onMouseMove);
-    this.#scrollElements?.forEach((e) => {
-      e.addEventListener("scroll", this.#onScroll, { passive: true });
-    });
+    this.#addOpenEvents();
 
     this.status = StatusType.Opened;
-
     if (typeof onOpen === "function") {
       onOpen(this);
     }
@@ -253,8 +267,9 @@ export default class Popover {
 
     // status
     this.status = StatusType.Closing;
+    this.#hidePending = false;
 
-    if (this.#animationClass) {
+    if (this.#animationClass && !this.#prefersReducedMotion()) {
       const { exitFrom, exitActive, exitTo } = this.#animationClass;
       popoverWrapper?.classList.add(exitFrom);
       this.#hideRaf = requestAnimationFrame(() => {
@@ -268,11 +283,10 @@ export default class Popover {
       if (triggerOpenClass) {
         trigger.classList.remove(triggerOpenClass);
       }
+      trigger.setAttribute("aria-expanded", "false");
 
       this.#subtractPopover();
-      this.#removeScrollEvent();
-      this.#removeDocClick();
-      this.#removeMouseMove();
+      this.#removeOpenEvents();
 
       // status
       this.status = StatusType.Closed;
@@ -373,7 +387,7 @@ export default class Popover {
     const { trigger, triggerOpenClass, appendTo } = this.config;
     const { popoverWrapper, popoverContent } = this.#getPopoverChildren();
 
-    function getChangedAttrs<T extends Record<string, any>>(
+    function getChangedAttrs<T extends Record<string, unknown>>(
       newV: Partial<T>,
       oldV: Partial<T>,
       updateOld = false,
@@ -397,7 +411,7 @@ export default class Popover {
     }
 
     changedAttrs.forEach(([k, n, o]) => {
-      // k: key, n: new,  o：old
+      // k: key, n: new, o: old
       switch (k) {
         case "trigger":
           {
@@ -411,19 +425,24 @@ export default class Popover {
             }
             this.#addTriggerEvent();
             if (this.status === StatusType.Opened && triggerOpenClass) {
-              (o as Element).classList.add(triggerOpenClass);
+              (n as Element).classList.add(triggerOpenClass);
             }
 
-            if (!this.#scrollElements) {
-              this.#scrollElements = $getScrollElements(trigger, appendTo);
+            this.#scrollElements = $getScrollElements(n as HTMLElement, appendTo);
+            if (this.status === StatusType.Opened) {
+              this.#addOpenEvents();
             }
           }
           break;
 
         case "content":
-          popoverContent?.removeChild(o as HTMLElement);
+          if (o instanceof HTMLElement && popoverContent?.contains(o)) {
+            popoverContent.removeChild(o);
+          } else {
+            popoverContent.innerHTML = "";
+          }
           if (n instanceof HTMLElement) {
-            popoverContent?.appendChild(n);
+            popoverContent?.appendChild(n.cloneNode(true) as HTMLElement);
           } else {
             popoverContent.innerHTML = (n || "").toString();
           }
@@ -442,27 +461,38 @@ export default class Popover {
           break;
 
         case "appendTo":
-          if ((o as HTMLElement).contains(this.popoverElement)) {
-            (o as HTMLElement).removeChild(this.popoverElement);
-          }
-          if (!n || !(n instanceof HTMLElement)) {
-            this.config.appendTo = document.body;
-          }
-          this.config.appendTo = n as HTMLElement;
-          if (this.#resizeObserver) {
-            this.#resizeObserver.unobserve(o as HTMLElement);
-            this.#resizeObserver.observe(n as HTMLElement);
+          {
+            if ((o as HTMLElement).contains(this.popoverElement)) {
+              (o as HTMLElement).removeChild(this.popoverElement);
+            }
+            if (!n || !(n instanceof HTMLElement)) {
+              this.config.appendTo = document.body;
+            } else {
+              this.config.appendTo = n as HTMLElement;
+            }
+            if (this.#resizeObserver) {
+              this.#resizeObserver.unobserve(o as HTMLElement);
+              this.#resizeObserver.observe(this.config.appendTo);
+            }
+            if (this.status === StatusType.Opened) {
+              this.config.appendTo.appendChild(this.popoverElement);
+              this.#scrollElements = $getScrollElements(
+                trigger as HTMLElement,
+                this.config.appendTo,
+              );
+              this.#addOpenEvents();
+            }
           }
           break;
 
         case "emit":
           this.#removeTriggerEvent();
-          if (n) {
-            this.#addTriggerEvent();
-          }
+          this.#addTriggerEvent();
           this.#removePopoverEvent();
           this.#addPopoverEvent();
-          this.#removeMouseMove();
+          if (this.status === StatusType.Opened) {
+            this.#addOpenEvents();
+          }
           break;
 
         case "mode":
@@ -475,18 +505,18 @@ export default class Popover {
           if (n) {
             this.#addPopoverEvent();
           }
-          this.#removeMouseMove();
+          if (this.status === StatusType.Opened) {
+            this.#addOpenEvents();
+          }
           break;
 
         case "closeOnScroll":
           {
             if (!this.#scrollElements) {
               this.#scrollElements = $getScrollElements(trigger as HTMLElement, appendTo);
-              if (this.status === StatusType.Opened) {
-                this.#scrollElements?.forEach((e) => {
-                  e.addEventListener("scroll", this.#onScroll, { passive: true });
-                });
-              }
+            }
+            if (this.status === StatusType.Opened) {
+              this.#addOpenEvents();
             }
           }
           break;
@@ -545,42 +575,54 @@ export default class Popover {
    * Destroy the Popover instance.
    */
   destroy() {
-    const { appendTo } = this.config;
+    const { appendTo, trigger, triggerOpenClass } = this.config;
+    this.#destroyed = true;
+    popoverRegistry.delete(this);
+
     if (this.#resizeObserver) {
       this.#resizeObserver.disconnect();
       this.#resizeObserver = undefined;
     }
 
-    if (this.status === StatusType.Opened) {
-      if (appendTo.contains(this.popoverElement)) {
-        appendTo.removeChild(this.popoverElement);
-      }
-      $setStyle(this.popoverElement, { transform: "" });
+    if (appendTo.contains(this.popoverElement)) {
+      appendTo.removeChild(this.popoverElement);
     }
+    $setStyle(this.popoverElement, { transform: "" });
 
-    cancelAnimationFrame(this.#showRaf!);
-    cancelAnimationFrame(this.#hideRaf!);
+    if (triggerOpenClass) {
+      trigger.classList.remove(triggerOpenClass);
+    }
+    trigger.removeAttribute("aria-expanded");
+    trigger.removeAttribute("aria-describedby");
+
+    if (this.#showRaf) {
+      cancelAnimationFrame(this.#showRaf);
+    }
+    if (this.#hideRaf) {
+      cancelAnimationFrame(this.#hideRaf);
+    }
+    if (this.#scrollRaf !== undefined) {
+      cancelAnimationFrame(this.#scrollRaf);
+      this.#scrollRaf = undefined;
+    }
 
     this.#clearShowTransition?.();
     this.#clearHideTransition?.();
-    this.#removeScrollEvent();
-    this.#removeDocClick();
+    this.#removeOpenEvents();
     this.#removeTriggerEvent();
     this.#removePopoverEvent();
-    this.#removeMouseMove();
 
     // status
     this.status = null;
   }
 
   /**
-   * Remove existing popovers
+   * Close all other opened popovers (keep only one open at a time).
    */
   cleanup() {
-    const popovers = document.querySelectorAll(`#${NextPopoverId}`);
-    Array.from(popovers).forEach((pop) => {
-      if (pop.parentElement) {
-        pop.parentElement?.removeChild(pop);
+    popoverRegistry.forEach((p) => {
+      if (p !== this && (p.status === StatusType.Opened || p.status === StatusType.Opening)) {
+        p.close();
       }
     });
   }
@@ -596,7 +638,8 @@ export default class Popover {
     this.popoverElement = $({
       tagName: "div",
       attributes: {
-        id: NextPopoverId,
+        id: `${NextPopoverIdPrefix}-${this.#id}`,
+        role: "tooltip",
       },
     });
     $setStyle(this.popoverElement, {
@@ -1099,27 +1142,27 @@ export default class Popover {
     }
   };
 
-  #onMouseEnterTrigger = debounce(() => {
+  #onMouseEnterTrigger = () => {
     this.openWithDelay();
-  }, 200);
+  };
 
-  #onMouseLeaveTrigger = debounce((event: MouseEvent) => {
-    const { emit, enterable, offset } = this.config;
+  #onMouseLeaveTrigger = (event: MouseEvent | FocusEvent) => {
+    const { emit, enterable } = this.config;
     if (emit === EmitType.Hover && enterable) {
-      const cursorXY = $getCursorCoords(event);
-      const popoverBoundary = this.#getPopoverEnterableBoundary({
-        popElement: this.popoverElement,
-        placement: this.#prevPlacement as PlacementType,
-        offset: offset || 0,
-      });
-      const isHoverPopover = this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary);
-      if (isHoverPopover) {
+      const cursorXY = $getCursorCoords(event as MouseEvent);
+      if (this.#isCursorInSafeArea(cursorXY)) {
         return;
       }
     }
 
-    this.closeWithDelay();
-  }, 200);
+    this.#clearTimers();
+    // Non-interactive mode (enterable=false): no time is needed for the cursor to move; close immediately
+    if (emit === EmitType.Hover && !enterable) {
+      this.close();
+    } else {
+      this.closeWithDelay();
+    }
+  };
 
   #addTriggerEvent() {
     const { trigger, emit } = this.config;
@@ -1127,8 +1170,11 @@ export default class Popover {
       if (emit === EmitType.Click) {
         trigger.addEventListener("click", this.#onClickTrigger);
       } else {
+        // Keyboard reachability: show on Tab focus, hide on blur (paired with the P2 aria attributes)
         trigger.addEventListener("mouseenter", this.#onMouseEnterTrigger);
         trigger.addEventListener("mouseleave", this.#onMouseLeaveTrigger);
+        trigger.addEventListener("focus", this.#onMouseEnterTrigger);
+        trigger.addEventListener("blur", this.#onMouseLeaveTrigger);
       }
     }
   }
@@ -1139,6 +1185,8 @@ export default class Popover {
       element.removeEventListener("click", this.#onClickTrigger);
       element.removeEventListener("mouseenter", this.#onMouseEnterTrigger);
       element.removeEventListener("mouseleave", this.#onMouseLeaveTrigger);
+      element.removeEventListener("focus", this.#onMouseEnterTrigger);
+      element.removeEventListener("blur", this.#onMouseLeaveTrigger);
     }
   }
 
@@ -1157,21 +1205,13 @@ export default class Popover {
   };
 
   #onMouseLeavePopover = (event: MouseEvent) => {
-    const { trigger, emit, enterable, offset } = this.config;
+    const { emit, enterable } = this.config;
 
     this.#clearTimers();
 
     if (emit === EmitType.Hover && enterable) {
       const cursorXY = $getCursorCoords(event);
-      const triggerBoundary = $getElementBoundary(trigger);
-      const popoverBoundary = this.#getPopoverEnterableBoundary({
-        popElement: this.popoverElement,
-        placement: this.#prevPlacement as PlacementType,
-        offset: offset || 0,
-      });
-      const isHoverTrigger = this.#isCursorInsideEnterableBoundary(cursorXY, triggerBoundary);
-      const isHoverPopover = this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary);
-      if (isHoverTrigger || isHoverPopover) {
+      if (this.#isCursorInSafeArea(cursorXY)) {
         return;
       }
     }
@@ -1192,17 +1232,20 @@ export default class Popover {
     this.popoverElement.removeEventListener("mouseleave", this.#onMouseLeavePopover);
   }
 
-  #onScroll = throttle(() => {
+  #onScroll = () => {
+    // rAF coalescing: reposition at most once per frame under high-frequency scroll so the popover follows the trigger in real time
     if (this.config.closeOnScroll) {
       this.close();
-    } else {
-      this.update();
+      return;
     }
-  }, 300);
-
-  #removeScrollEvent() {
-    this.#scrollElements?.forEach((e) => e.removeEventListener("scroll", this.#onScroll));
-  }
+    if (this.#scrollRaf !== undefined) {
+      return;
+    }
+    this.#scrollRaf = requestAnimationFrame(() => {
+      this.#scrollRaf = undefined;
+      this.update();
+    });
+  };
 
   #onDocClick = ({ target }: MouseEvent) => {
     const { trigger, clickOutsideClose } = this.config;
@@ -1216,38 +1259,64 @@ export default class Popover {
         return;
       }
 
-      if (clickOutsideClose) {
-        this.closeWithDelay();
-      }
+      this.closeWithDelay();
     }
-  };
-
-  #removeDocClick = () => {
-    document.removeEventListener("click", this.#onDocClick);
   };
 
   #onMouseMove = (event: MouseEvent) => {
-    const { emit, enterable, trigger, offset } = this.config;
-    if (emit === EmitType.Hover && enterable) {
-      const cursorXY = $getCursorCoords(event);
-      const triggerBoundary = $getElementBoundary(trigger);
-      const isHoverTrigger = this.#isCursorInsideEnterableBoundary(cursorXY, triggerBoundary);
-      if (!isHoverTrigger) {
-        const popoverBoundary = this.#getPopoverEnterableBoundary({
-          popElement: this.popoverElement,
-          placement: this.#prevPlacement as PlacementType,
-          offset: offset || 0,
-        });
-        const isHoverPopover = this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary);
-        if (!isHoverPopover) {
-          this.closeWithDelay();
-        }
-      }
+    const { emit, enterable } = this.config;
+    if (emit !== EmitType.Hover || !enterable) {
+      return;
+    }
+
+    const cursorXY = $getCursorCoords(event);
+    // Back in the safe area: cancel the pending hide
+    if (this.#isCursorInSafeArea(cursorXY)) {
+      this.#cancelPendingHide();
+      return;
+    }
+    // Start the hide timer on the FIRST exit only; later mousemove events do not reset it, so continuous movement can never keep the popover open forever
+    if (!this.#hidePending) {
+      this.#hidePending = true;
+      this.#closeTimer = setTimeout(() => {
+        this.#hidePending = false;
+        this.close();
+      }, this.config.closeDelay);
     }
   };
 
-  #removeMouseMove = () => {
-    document.removeEventListener("mousemove", this.#onMouseMove);
+  /**
+   * Unified open-period event mounting: document click/mousemove/keydown(ESC) + scroll containers.
+   * Managed via AbortController and released in one shot on close/destroy/updateConfig,
+   * avoiding leaks from missed per-listener removals.
+   */
+  #addOpenEvents() {
+    this.#openController?.abort();
+    this.#openController = new AbortController();
+    const { signal } = this.#openController;
+    const { emit, enterable } = this.config;
+
+    document.addEventListener("click", this.#onDocClick, { signal });
+    document.addEventListener("keydown", this.#onKeyDown, { signal });
+    // mousemove belongs to hover + enterable only; skip it for click mode
+    if (emit === EmitType.Hover && enterable) {
+      document.addEventListener("mousemove", this.#onMouseMove, { signal });
+    }
+    this.#scrollElements?.forEach((e) => {
+      e.addEventListener("scroll", this.#onScroll, { passive: true, signal });
+    });
+  }
+
+  #removeOpenEvents() {
+    this.#openController?.abort();
+    this.#openController = undefined;
+  }
+
+  #onKeyDown = (event: KeyboardEvent) => {
+    // Close on ESC: a11y keyboard reachability
+    if (event.key === "Escape") {
+      this.close();
+    }
   };
 
   #observe() {
@@ -1290,19 +1359,19 @@ export default class Popover {
     let clear: undefined | (() => void);
 
     const promise = new Promise((resolve) => {
-      if (timeout) {
+      if (timeout && event) {
         const fn = () => {
           clear?.();
           resolve(null);
         };
-        element.addEventListener(event!, fn);
+        element.addEventListener(event, fn);
         const timer = setTimeout(() => {
           clear?.();
           resolve(null);
         }, timeout + 2);
         clear = () => {
           clearTimeout(timer);
-          element.removeEventListener(event!, fn);
+          element.removeEventListener(event, fn);
         };
       } else {
         requestAnimationFrame(resolve);
@@ -1318,8 +1387,10 @@ export default class Popover {
   #onShowTransitionEnd = () => {
     const { onEntered } = this.config;
     const { popoverWrapper } = this.#getPopoverChildren();
-    const { enterActive, enterTo } = this.#animationClass || {};
-    popoverWrapper?.classList.remove(enterActive!, enterTo!);
+    const animationClass = this.#animationClass;
+    if (animationClass) {
+      popoverWrapper?.classList.remove(animationClass.enterActive, animationClass.enterTo);
+    }
 
     if (onEntered) {
       onEntered(this);
@@ -1329,16 +1400,17 @@ export default class Popover {
   #onHideTransitionEnd = () => {
     const { trigger, triggerOpenClass, onClose, onExited } = this.config;
     const { popoverWrapper } = this.#getPopoverChildren();
-    const { exitActive, exitTo } = this.#animationClass || {};
-
-    popoverWrapper?.classList.remove(exitActive!, exitTo!);
-    trigger.classList.remove(triggerOpenClass!);
+    const animationClass = this.#animationClass;
+    if (animationClass) {
+      popoverWrapper?.classList.remove(animationClass.exitActive, animationClass.exitTo);
+    }
+    if (triggerOpenClass) {
+      trigger.classList.remove(triggerOpenClass);
+    }
+    trigger.setAttribute("aria-expanded", "false");
 
     this.#subtractPopover();
-
-    this.#removeScrollEvent();
-    this.#removeDocClick();
-    this.#removeMouseMove();
+    this.#removeOpenEvents();
 
     // status
     this.status = StatusType.Closed;
@@ -1395,13 +1467,51 @@ export default class Popover {
     if (placement === Right || placement === RightStart || placement === RightEnd) {
       left -= offset;
     }
+    // interactiveBorder: expand the boundary so edge-hugging or tiny cursor jitter never triggers hide (same 10px default as Tippy)
+    const interactiveBorder = 10;
     return {
-      left: Math.trunc(left),
-      top: Math.trunc(top),
-      bottom: Math.trunc(bottom),
-      right: Math.trunc(right),
+      left: Math.trunc(left) - interactiveBorder,
+      top: Math.trunc(top) - interactiveBorder,
+      bottom: Math.trunc(bottom) + interactiveBorder,
+      right: Math.trunc(right) + interactiveBorder,
     };
   };
+
+  /**
+   * Unified "safe area" check: the cursor inside the trigger, the popover, or the corridor between them is not treated as a leave.
+   * Shared by the hover-mode mouseleave / popover leave / mousemove handlers to avoid logic drift.
+   */
+  #isCursorInSafeArea = (cursorXY: { x: number; y: number }) => {
+    const { trigger, offset } = this.config;
+    const triggerBoundary = $getElementBoundary(trigger);
+    const popoverBoundary = this.#getPopoverEnterableBoundary({
+      popElement: this.popoverElement,
+      placement: this.#prevPlacement ?? PlacementType.Top,
+      offset: offset || 0,
+    });
+    return (
+      this.#isCursorInsideEnterableBoundary(cursorXY, triggerBoundary) ||
+      this.#isCursorInsideEnterableBoundary(cursorXY, popoverBoundary)
+    );
+  };
+
+  /** Cancel the pending hide (called when the cursor re-enters the safe area) */
+  #cancelPendingHide = () => {
+    if (this.#hidePending && this.#closeTimer) {
+      clearTimeout(this.#closeTimer);
+      this.#closeTimer = undefined;
+    }
+    this.#hidePending = false;
+  };
+
+  /** System "reduce motion" preference: when active, skip transitions and finish open/close instantly */
+  #prefersReducedMotion() {
+    return (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
 
   #isCursorInsideEnterableBoundary = (
     cursorXY: { x: number; y: number },
@@ -1419,7 +1529,15 @@ export default class Popover {
   };
 
   #clearTimers = () => {
-    clearTimeout(this.#openTimer);
-    clearTimeout(this.#closeTimer);
+    // When any open/close flow is cancelled, the pending hide is invalidated as well
+    if (this.#openTimer) {
+      clearTimeout(this.#openTimer);
+      this.#openTimer = undefined;
+    }
+    if (this.#closeTimer) {
+      clearTimeout(this.#closeTimer);
+      this.#closeTimer = undefined;
+    }
+    this.#hidePending = false;
   };
 }

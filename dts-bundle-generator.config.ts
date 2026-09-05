@@ -2,7 +2,7 @@ const outputName = "popover";
 
 const config = {
   compilationOptions: {
-    preferredConfigPath: "./tsconfig.json",
+    preferredConfigPath: "./tsconfig.dts.json",
   },
   entries: [
     {

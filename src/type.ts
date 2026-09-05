@@ -1,8 +1,11 @@
 import type { EmitType, PlacementType, ModeType } from "./constant";
+import type Popover from "./popover";
 
 export type RequireOneKey<T, K extends keyof T> = {
   [P in K]-?: T[P];
 } & Omit<T, K>;
+
+export type PopoverCallback = (popover?: Popover) => void;
 
 export interface PopoverConfig {
   trigger: HTMLElement;
@@ -23,12 +26,12 @@ export interface PopoverConfig {
   triggerOpenClass?: string;
   wrapperClass?: string;
   animationClass?: string;
-  onBeforeEnter?: (t?: any) => void;
-  onEntered?: (t?: any) => void;
-  onBeforeExit?: (t?: any) => void;
-  onExited?: (t?: any) => void;
-  onOpen?: (t?: any) => void;
-  onClose?: (t?: any) => void;
+  onBeforeEnter?: PopoverCallback;
+  onEntered?: PopoverCallback;
+  onBeforeExit?: PopoverCallback;
+  onExited?: PopoverCallback;
+  onOpen?: PopoverCallback;
+  onClose?: PopoverCallback;
 }
 
 export interface AnimationClass {
