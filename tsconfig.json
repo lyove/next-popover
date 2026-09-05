@@ -17,7 +17,7 @@
     "noUnusedParameters": true,
     "noImplicitThis": false,
     "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": true
     // "types": ["vite/client"]
   },
   "include": ["src"],
